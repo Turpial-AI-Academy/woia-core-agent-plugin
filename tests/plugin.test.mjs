@@ -269,6 +269,13 @@ test("checksum generation bootstraps a missing CHECKSUMS.sha256 file", async (t)
   await validateChecksums(fixture.root);
 });
 
+test("portable release validation does not require a source checksum manifest", async (t) => {
+  const fixture = await createFixture(t);
+  await rm(path.join(fixture.root, "CHECKSUMS.sha256"));
+  commitFixture(fixture.root);
+  await assert.doesNotReject(() => validatePortableArchive(fixture.root, "HEAD"));
+});
+
 test("portable path safety and secret-like material are rejected", async (t) => {
   const pathFixture = await createFixture(t);
   const target = path.join(pathFixture.root, "skills/example/SKILL.md");
@@ -505,7 +512,7 @@ test("a real git archive must preserve payload bytes covered by checksums", asyn
     readme: "# Fixture\n\n$Format:%H$\n[Skill](skills/example/SKILL.md)\n",
   });
   commitFixture(fixture.root);
-  await assert.rejects(validatePortableArchive(fixture.root, "HEAD"), /archive content differs from CHECKSUMS\.sha256: README\.md/);
+  await assert.rejects(validatePortableArchive(fixture.root, "HEAD"), /archive content differs from candidate checkout: README\.md/);
 });
 
 test("node --test discovers nested test files and propagates failures", async (t) => {

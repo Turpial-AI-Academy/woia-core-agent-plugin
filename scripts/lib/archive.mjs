@@ -1,9 +1,8 @@
 import { execFileSync } from "node:child_process";
-import { createHash } from "node:crypto";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { assert, expectedChecksumLines, portablePayloadPaths } from "./plugin.mjs";
+import { assert, portablePayloadPaths } from "./plugin.mjs";
 
 function readTarString(buffer, start, length) {
   const end = buffer.indexOf(0, start);
@@ -102,16 +101,9 @@ export async function validatePortableArchive(root, treeish = "HEAD") {
   const missing = expected.filter((relativePath) => !actualSet.has(relativePath));
   assert(extra.length === 0 && missing.length === 0,
     `Git archive does not match the portable payload; extra: ${extra.join(", ") || "none"}; missing: ${missing.join(", ") || "none"}`);
-  const expectedHashes = new Map((await expectedChecksumLines(root)).map((line) => [line.slice(66), line.slice(0, 64)]));
-  const archivedChecksums = entries.find((entry) => entry.path === "CHECKSUMS.sha256");
-  assert(archivedChecksums, "Git archive is missing CHECKSUMS.sha256");
-  assert(archivedChecksums.content.equals(await readFile(path.join(root, "CHECKSUMS.sha256"))),
-    "Git archive CHECKSUMS.sha256 content differs from the candidate checkout");
   for (const entry of entries) {
-    if (entry.path === "CHECKSUMS.sha256") continue;
-    const expectedHash = expectedHashes.get(entry.path);
-    const actualHash = createHash("sha256").update(entry.content).digest("hex");
-    assert(actualHash === expectedHash, `Git archive content differs from CHECKSUMS.sha256: ${entry.path}`);
+    const source = await readFile(path.join(root, ...entry.path.split("/")));
+    assert(entry.content.equals(source), `Git archive content differs from candidate checkout: ${entry.path}`);
   }
   return actual.length;
 }

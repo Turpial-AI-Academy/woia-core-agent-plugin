@@ -16,7 +16,6 @@ export const PORTABLE_ROOT_FILES = Object.freeze([
   "README.md",
   "CHANGELOG.md",
   "LICENSE",
-  "CHECKSUMS.sha256",
 ]);
 export const EXTENSION_NAMESPACE_RE = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$/;
 

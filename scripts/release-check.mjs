@@ -7,7 +7,6 @@ import {
   assert,
   readJson,
   scanPortablePayload,
-  validateChecksums,
   validateManifest,
   validateMarkdownLinks,
   validateMcp,
@@ -97,7 +96,6 @@ export async function runReleaseCheck(root = ROOT, { quiet = false } = {}) {
   await validateMarkdownLinks(root);
   await validateRootSafety(root);
   await scanPortablePayload(root);
-  await validateChecksums(root);
   await validateReleaseVersion(root, manifest);
 
   runCandidateTests(root, { quiet });
@@ -108,7 +106,7 @@ export async function runReleaseCheck(root = ROOT, { quiet = false } = {}) {
 
   if (!quiet) {
     console.log(`release:check: ${manifest.name}@${manifest.version} candidate ${candidate}`);
-    console.log(`release:check: manifest, MCP, template placeholders, skills, links, paths, secrets, checksums, tests, version, whitespace, and ${archiveFiles}-file portable archive OK`);
+    console.log(`release:check: manifest, MCP, template placeholders, skills, links, paths, secrets, tests, version, whitespace, and ${archiveFiles}-file portable archive OK`);
   }
   return { candidate, version: manifest.version, archiveFiles };
 }
