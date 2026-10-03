@@ -1,0 +1,41 @@
+min_version = "2026.9.5"
+
+[settings]
+auto_install = false
+not_found_auto_install = false
+lockfile = true
+lockfile_platforms = ["windows-x64", "linux-x64"]
+
+[settings.task]
+run_auto_install = false
+
+[tools]
+node = "24.21.0"
+pnpm = "11.19.0"
+
+[tasks.bootstrap]
+run = "node scripts/bootstrap.mjs"
+
+[tasks.doctor]
+run = "node scripts/doctor.mjs"
+
+[tasks.validate]
+run = "node scripts/validate-plugin.mjs"
+
+[tasks.test]
+run = "node --test"
+
+[tasks."ci:fast"]
+run = "node scripts/ci-fast.mjs"
+
+[tasks."ci:extended"]
+run = "node scripts/ci-extended.mjs"
+
+[tasks."jobs:local"]
+run = "node scripts/jobs-local.mjs"
+
+[tasks."checksums:generate"]
+run = "node scripts/generate-checksums.mjs"
+
+[tasks."release:check"]
+run = "node scripts/release-check.mjs"

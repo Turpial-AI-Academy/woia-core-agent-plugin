@@ -1,0 +1,44 @@
+{
+  "schema": "dev.woia.workflow-profile/v1",
+  "id": "opea-h-full",
+  "version": "0.5.0",
+  "applies_to": "non-software",
+  "phases": [
+    {
+      "phase": "orchestration",
+      "requirement": "required",
+      "role": "orchestrator"
+    },
+    {
+      "phase": "planning",
+      "requirement": "required",
+      "role": "planner"
+    },
+    {
+      "phase": "execution",
+      "requirement": "required",
+      "role": "executor"
+    },
+    {
+      "phase": "audit",
+      "requirement": "required",
+      "role": "auditor"
+    },
+    {
+      "phase": "human-review",
+      "requirement": "required",
+      "role": "human-reviewer"
+    }
+  ],
+  "human_review": true,
+  "audit_cycle_limit": 3,
+  "revision_fast_path": {
+    "allowed": true,
+    "requires_unchanged": [
+      "scope",
+      "authority",
+      "effects",
+      "deliverable-contract"
+    ]
+  }
+}

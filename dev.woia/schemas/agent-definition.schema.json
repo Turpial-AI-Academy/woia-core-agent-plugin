@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://woia.dev/schemas/core/v0.5.0/agent-definition.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "version",
+    "role",
+    "purpose",
+    "instructions",
+    "skill_refs",
+    "limits"
+  ],
+  "properties": {
+    "schema": {
+      "const": "dev.woia.agent-definition/v1"
+    },
+    "id": {
+      "$ref": "./common.schema.json#/$defs/id"
+    },
+    "version": {
+      "$ref": "./common.schema.json#/$defs/semver"
+    },
+    "role": {
+      "enum": [
+        "orchestrator",
+        "planner",
+        "executor",
+        "auditor",
+        "service"
+      ]
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 1
+    },
+    "instructions": {
+      "type": "string",
+      "minLength": 1
+    },
+    "skill_refs": {
+      "type": "array",
+      "items": {
+        "$ref": "./common.schema.json#/$defs/id"
+      }
+    },
+    "limits": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

@@ -1,0 +1,145 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://woia.dev/schemas/core/v0.5.0/task-cell.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "revision",
+    "task_ref",
+    "workflow_profile",
+    "agents",
+    "phase_requirements",
+    "current_phase",
+    "audit_cycles",
+    "runtime_binding_refs"
+  ],
+  "properties": {
+    "schema": {
+      "const": "dev.woia.task-cell/v1"
+    },
+    "id": {
+      "$ref": "./common.schema.json#/$defs/id"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "task_ref": {
+      "$ref": "./common.schema.json#/$defs/ref"
+    },
+    "workflow_profile": {
+      "enum": [
+        "task-execution",
+        "planned-execution",
+        "audited-execution",
+        "opea-h-full",
+        "software-methodology"
+      ]
+    },
+    "agents": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "orchestrator_ref": {
+          "$ref": "./common.schema.json#/$defs/ref"
+        },
+        "planner_ref": {
+          "$ref": "./common.schema.json#/$defs/ref"
+        },
+        "executor_ref": {
+          "$ref": "./common.schema.json#/$defs/ref"
+        },
+        "auditor_ref": {
+          "$ref": "./common.schema.json#/$defs/ref"
+        }
+      },
+      "required": [
+        "orchestrator_ref",
+        "executor_ref"
+      ]
+    },
+    "phase_requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "phase",
+          "requirement"
+        ],
+        "properties": {
+          "phase": {
+            "enum": [
+              "orchestration",
+              "planning",
+              "execution",
+              "audit",
+              "human-review"
+            ]
+          },
+          "requirement": {
+            "enum": [
+              "required",
+              "conditional",
+              "skipped"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "current_phase": {
+      "enum": [
+        "orchestration",
+        "planning",
+        "execution",
+        "audit",
+        "human-review"
+      ]
+    },
+    "audit_cycles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "current",
+        "maximum"
+      ],
+      "properties": {
+        "current": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maximum": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "runtime_binding_refs": {
+      "type": "array",
+      "items": {
+        "$ref": "./common.schema.json#/$defs/ref"
+      }
+    },
+    "artifact_refs": {
+      "type": "array",
+      "items": {
+        "$ref": "./common.schema.json#/$defs/resourceRef"
+      }
+    },
+    "current_checkpoint_ref": {
+      "anyOf": [
+        {
+          "$ref": "./common.schema.json#/$defs/ref"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

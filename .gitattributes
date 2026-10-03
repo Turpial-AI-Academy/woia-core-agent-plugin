@@ -1,0 +1,19 @@
+* text=auto eol=lf
+
+/.github/ export-ignore
+/scripts/ export-ignore
+/tests/ export-ignore
+/docs/ export-ignore
+/AGENTS.md export-ignore
+/CONTRIBUTING.md export-ignore
+/SECURITY.md export-ignore
+/README.plugin.md export-ignore
+/package.json export-ignore
+/pnpm-lock.yaml export-ignore
+/pnpm-workspace.yaml export-ignore
+/VALIDATION.md export-ignore
+/mise.toml export-ignore
+/mise.lock export-ignore
+/.editorconfig export-ignore
+/.gitignore export-ignore
+/.gitattributes export-ignore

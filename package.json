@@ -1,0 +1,29 @@
+{
+  "name": "woia-core-agent-plugin-repo",
+  "private": true,
+  "version": "0.5.0",
+  "description": "Repository maintenance tooling for the WOIA Core portable Agent Plugin.",
+  "type": "module",
+  "engines": {
+    "node": "24.21.0",
+    "pnpm": "11.19.0"
+  },
+  "scripts": {
+    "bootstrap": "node scripts/bootstrap.mjs",
+    "doctor": "node scripts/doctor.mjs",
+    "validate": "node scripts/validate-plugin.mjs",
+    "checksums:generate": "node scripts/generate-checksums.mjs",
+    "checksums:check": "node scripts/check-checksums.mjs",
+    "test": "node --test",
+    "ci:fast": "node scripts/ci-fast.mjs",
+    "ci:extended": "node scripts/ci-extended.mjs",
+    "release:check": "node scripts/release-check.mjs",
+    "jobs:local": "node scripts/jobs-local.mjs"
+  },
+  "packageManager": "pnpm@11.19.0",
+  "devDependencies": {
+    "ajv": "8.20.0",
+    "smol-toml": "1.9.0",
+    "yaml": "2.9.1"
+  }
+}

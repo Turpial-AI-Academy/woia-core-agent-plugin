@@ -1,0 +1,40 @@
+{
+  "schema": "dev.woia.core-manifest/v1",
+  "version": "0.5.0",
+  "skills": [
+    "project-runtime",
+    "opea-h",
+    "project-improvement"
+  ],
+  "schemas": [
+    "common",
+    "project-state",
+    "task",
+    "task-cell",
+    "agent-definition",
+    "agent-instance",
+    "runtime-binding",
+    "execution-receipt",
+    "effect-record",
+    "improvement-candidate",
+    "overlay",
+    "effective-capability-snapshot",
+    "checkpoint",
+    "self-evaluation",
+    "error-record",
+    "workflow-profile"
+  ],
+  "workflow_profiles": [
+    "direct-service",
+    "task-execution",
+    "planned-execution",
+    "audited-execution",
+    "opea-h-full"
+  ],
+  "storage_root": ".woia",
+  "source_lineage": {
+    "foundation_repository": "Therenovatioai/woia-foundation",
+    "asps_repository": "Turpial-AI-Academy/asps-agent-plugin",
+    "extraction_policy": "carry-forward-invariants-not-monolith-runtime"
+  }
+}

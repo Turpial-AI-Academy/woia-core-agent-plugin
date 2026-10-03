@@ -1,0 +1,343 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://woia.dev/schemas/core/v0.5.0/project-state.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "core_version",
+    "project",
+    "root_agent_binding",
+    "provider_resolution",
+    "custom_agents",
+    "orchestration",
+    "storage",
+    "updated_at"
+  ],
+  "properties": {
+    "schema": {
+      "const": "dev.woia.core-project-state/v1"
+    },
+    "core_version": {
+      "const": "0.5.0"
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "department",
+        "orchestrator"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "./common.schema.json#/$defs/id"
+        },
+        "department": {
+          "$ref": "./common.schema.json#/$defs/id"
+        },
+        "orchestrator": {
+          "$ref": "./common.schema.json#/$defs/id"
+        },
+        "organization_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "root_agent_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "instructions_file",
+        "managed_block_id"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "pending",
+            "bound",
+            "conflict"
+          ]
+        },
+        "instructions_file": {
+          "const": "AGENTS.md"
+        },
+        "managed_block_id": {
+          "const": "WOIA_PROJECT_OPERATING_CONTRACT"
+        },
+        "last_reconciled_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      }
+    },
+    "provider_resolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "installation_policy",
+        "status",
+        "providers",
+        "install_plan"
+      ],
+      "properties": {
+        "installation_policy": {
+          "const": "ask_once"
+        },
+        "installation_authorization": {
+          "enum": [
+            "pending",
+            "not_required",
+            "granted",
+            "invalidated"
+          ]
+        },
+        "status": {
+          "enum": [
+            "pending",
+            "provider_installation_required",
+            "provider_install_identity_unresolved",
+            "runtime_restart_required",
+            "runtime_ready",
+            "blocked"
+          ]
+        },
+        "providers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "responsibility",
+              "publication",
+              "discoverability",
+              "installation",
+              "enablement",
+              "runtime"
+            ],
+            "properties": {
+              "name": {
+                "$ref": "./common.schema.json#/$defs/id"
+              },
+              "responsibility": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "selector": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "publication": {
+                "enum": [
+                  "available",
+                  "missing",
+                  "deprecated"
+                ]
+              },
+              "discoverability": {
+                "enum": [
+                  "discoverable",
+                  "missing",
+                  "unverified"
+                ]
+              },
+              "installation": {
+                "enum": [
+                  "installed",
+                  "missing",
+                  "install_failed",
+                  "unverified"
+                ]
+              },
+              "enablement": {
+                "enum": [
+                  "enabled",
+                  "disabled",
+                  "unverified"
+                ]
+              },
+              "runtime": {
+                "enum": [
+                  "loaded",
+                  "not_loaded",
+                  "unverified"
+                ]
+              }
+            }
+          }
+        },
+        "install_plan": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "plugin",
+              "marketplace",
+              "selector",
+              "responsibility"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "plugin": {
+                "$ref": "./common.schema.json#/$defs/id"
+              },
+              "marketplace": {
+                "$ref": "./common.schema.json#/$defs/id"
+              },
+              "selector": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "responsibility": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "install_plan_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "authorized_plan_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "custom_agents": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "materialized_generation",
+        "loaded_generation",
+        "roles"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "not_materialized",
+            "materialized_pending_reload",
+            "loaded",
+            "blocked"
+          ]
+        },
+        "materialized_generation": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "loaded_generation": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "$ref": "./common.schema.json#/$defs/id"
+          }
+        }
+      }
+    },
+    "orchestration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "runtime_restart_required"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "initializing",
+            "provider_installation_required",
+            "runtime_restart_required",
+            "runtime_ready",
+            "active",
+            "waiting",
+            "blocked"
+          ]
+        },
+        "runtime_restart_required": {
+          "type": "boolean"
+        },
+        "current_task_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "current_run_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "storage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tasks",
+        "receipts",
+        "overlays",
+        "snapshots",
+        "effects",
+        "checkpoints"
+      ],
+      "properties": {
+        "tasks": {
+          "const": ".woia/tasks"
+        },
+        "receipts": {
+          "const": ".woia/receipts"
+        },
+        "overlays": {
+          "const": ".woia/overlays"
+        },
+        "snapshots": {
+          "const": ".woia/snapshots"
+        },
+        "effects": {
+          "const": ".woia/effects"
+        },
+        "checkpoints": {
+          "const": ".woia/checkpoints"
+        }
+      }
+    },
+    "updated_at": {
+      "$ref": "./common.schema.json#/$defs/datetime"
+    }
+  }
+}

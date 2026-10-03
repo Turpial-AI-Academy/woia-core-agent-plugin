@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://woia.dev/schemas/core/v0.5.0/workflow-profile.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "version",
+    "applies_to",
+    "phases",
+    "human_review",
+    "audit_cycle_limit"
+  ],
+  "properties": {
+    "schema": {
+      "const": "dev.woia.workflow-profile/v1"
+    },
+    "id": {
+      "$ref": "./common.schema.json#/$defs/id"
+    },
+    "version": {
+      "const": "0.5.0"
+    },
+    "applies_to": {
+      "enum": [
+        "non-software",
+        "software"
+      ]
+    },
+    "phases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "phase",
+          "requirement",
+          "role"
+        ],
+        "properties": {
+          "phase": {
+            "enum": [
+              "orchestration",
+              "planning",
+              "execution",
+              "audit",
+              "human-review"
+            ]
+          },
+          "requirement": {
+            "enum": [
+              "required",
+              "conditional",
+              "skipped"
+            ]
+          },
+          "role": {
+            "enum": [
+              "orchestrator",
+              "planner",
+              "executor",
+              "auditor",
+              "human-reviewer"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "human_review": {
+      "type": "boolean"
+    },
+    "audit_cycle_limit": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "revision_fast_path": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "allowed",
+        "requires_unchanged"
+      ],
+      "properties": {
+        "allowed": {
+          "type": "boolean"
+        },
+        "requires_unchanged": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "scope",
+              "authority",
+              "effects",
+              "deliverable-contract"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

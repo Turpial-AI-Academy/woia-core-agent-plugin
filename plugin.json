@@ -1,0 +1,21 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "woia-core",
+  "version": "0.5.0",
+  "description": "WOIA cross-department operating core for Project bootstrap, durable Tasks, OPEA-H, provider/runtime lifecycle, evidence, effects, improvement, overlays, and safe updates.",
+  "author": {
+    "name": "Turpial AI Academy",
+    "url": "https://github.com/Turpial-AI-Academy"
+  },
+  "homepage": "https://github.com/Turpial-AI-Academy/woia-core-agent-plugin",
+  "repository": "https://github.com/Turpial-AI-Academy/woia-core-agent-plugin",
+  "license": "MIT",
+  "keywords": [
+    "agent-plugin",
+    "woia",
+    "orchestration",
+    "opea-h",
+    "tasks",
+    "project-runtime"
+  ]
+}

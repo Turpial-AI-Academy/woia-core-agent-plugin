@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://woia.dev/schemas/core/v0.5.0/effect-record.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "task_ref",
+    "run_id",
+    "effect_key",
+    "effect_class",
+    "action",
+    "action_digest",
+    "state",
+    "observed_at",
+    "evidence"
+  ],
+  "properties": {
+    "schema": {
+      "const": "dev.woia.effect-record/v1"
+    },
+    "id": {
+      "$ref": "./common.schema.json#/$defs/id"
+    },
+    "task_ref": {
+      "$ref": "./common.schema.json#/$defs/ref"
+    },
+    "run_id": {
+      "$ref": "./common.schema.json#/$defs/id"
+    },
+    "effect_key": {
+      "$ref": "./common.schema.json#/$defs/id"
+    },
+    "effect_class": {
+      "enum": [
+        "none",
+        "read",
+        "local-write",
+        "external-write",
+        "communication",
+        "publication",
+        "financial",
+        "security-sensitive",
+        "physical"
+      ]
+    },
+    "action": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "capability",
+        "operation"
+      ],
+      "properties": {
+        "capability": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "action_digest": {
+      "$ref": "./common.schema.json#/$defs/sha256"
+    },
+    "state": {
+      "enum": [
+        "not-attempted",
+        "attempted",
+        "confirmed",
+        "rejected",
+        "partial",
+        "unknown",
+        "compensated"
+      ]
+    },
+    "observed_at": {
+      "$ref": "./common.schema.json#/$defs/datetime"
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "prior_effect_ref": {
+      "anyOf": [
+        {
+          "$ref": "./common.schema.json#/$defs/ref"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "transition": {
+      "enum": [
+        "observation",
+        "reconciliation",
+        "compensation"
+      ]
+    }
+  }
+}

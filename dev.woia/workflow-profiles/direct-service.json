@@ -1,0 +1,19 @@
+{
+  "schema": "dev.woia.workflow-profile/v1",
+  "id": "direct-service",
+  "version": "0.5.0",
+  "applies_to": "non-software",
+  "phases": [
+    {
+      "phase": "orchestration",
+      "requirement": "required",
+      "role": "orchestrator"
+    }
+  ],
+  "human_review": false,
+  "audit_cycle_limit": 1,
+  "revision_fast_path": {
+    "allowed": false,
+    "requires_unchanged": []
+  }
+}

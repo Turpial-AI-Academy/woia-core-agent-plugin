@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://woia.dev/schemas/core/v0.5.0/agent-instance.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "revision",
+    "definition_ref",
+    "task_ref",
+    "role",
+    "lifecycle",
+    "memory_scope",
+    "resource_scope",
+    "capability_snapshot_refs"
+  ],
+  "properties": {
+    "schema": {
+      "const": "dev.woia.agent-instance/v1"
+    },
+    "id": {
+      "$ref": "./common.schema.json#/$defs/id"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "definition_ref": {
+      "$ref": "./common.schema.json#/$defs/ref"
+    },
+    "task_ref": {
+      "$ref": "./common.schema.json#/$defs/ref"
+    },
+    "role": {
+      "enum": [
+        "orchestrator",
+        "planner",
+        "executor",
+        "auditor",
+        "service"
+      ]
+    },
+    "lifecycle": {
+      "enum": [
+        "provisioned",
+        "active",
+        "waiting",
+        "dormant",
+        "archived"
+      ]
+    },
+    "authority_context_ref": {
+      "anyOf": [
+        {
+          "$ref": "./common.schema.json#/$defs/ref"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "memory_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "paths"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "none",
+            "task-only"
+          ]
+        },
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "resource_scope": {
+      "type": "array",
+      "items": {
+        "$ref": "./common.schema.json#/$defs/resourceRef"
+      }
+    },
+    "capability_snapshot_refs": {
+      "type": "array",
+      "items": {
+        "$ref": "./common.schema.json#/$defs/ref"
+      }
+    },
+    "active_binding_ref": {
+      "anyOf": [
+        {
+          "$ref": "./common.schema.json#/$defs/ref"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://woia.dev/schemas/core/v0.5.0/checkpoint.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "task_ref",
+    "task_revision",
+    "task_state",
+    "current_phase",
+    "completed_units",
+    "pending_units",
+    "unknown_effect_refs",
+    "resume_preconditions",
+    "next_action",
+    "created_at"
+  ],
+  "properties": {
+    "schema": {
+      "const": "dev.woia.checkpoint/v1"
+    },
+    "id": {
+      "$ref": "./common.schema.json#/$defs/id"
+    },
+    "task_ref": {
+      "$ref": "./common.schema.json#/$defs/ref"
+    },
+    "task_revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "task_state": {
+      "enum": [
+        "draft",
+        "ready",
+        "active",
+        "waiting",
+        "approval-required",
+        "blocked",
+        "handoff-pending",
+        "completed",
+        "failed",
+        "cancelled",
+        "superseded"
+      ]
+    },
+    "current_phase": {
+      "type": "string",
+      "minLength": 1
+    },
+    "completed_units": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "pending_units": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "input_refs": {
+      "type": "array",
+      "items": {
+        "$ref": "./common.schema.json#/$defs/resourceRef"
+      }
+    },
+    "artifact_refs": {
+      "type": "array",
+      "items": {
+        "$ref": "./common.schema.json#/$defs/resourceRef"
+      }
+    },
+    "effect_refs": {
+      "type": "array",
+      "items": {
+        "$ref": "./common.schema.json#/$defs/ref"
+      }
+    },
+    "unknown_effect_refs": {
+      "type": "array",
+      "items": {
+        "$ref": "./common.schema.json#/$defs/ref"
+      }
+    },
+    "resume_preconditions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "next_action": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "enum": [
+            "phase-step",
+            "human-action",
+            "reconcile",
+            "resume"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ref": {
+          "$ref": "./common.schema.json#/$defs/ref"
+        }
+      }
+    },
+    "created_at": {
+      "$ref": "./common.schema.json#/$defs/datetime"
+    }
+  }
+}

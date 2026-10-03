@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://woia.dev/schemas/core/v0.5.0/self-evaluation.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "task_ref",
+    "run_id",
+    "agent_instance_ref",
+    "result",
+    "what_worked",
+    "what_failed",
+    "remaining_risks",
+    "improvement_candidate_refs",
+    "evidence"
+  ],
+  "properties": {
+    "schema": {
+      "const": "dev.woia.self-evaluation/v1"
+    },
+    "id": {
+      "$ref": "./common.schema.json#/$defs/id"
+    },
+    "task_ref": {
+      "$ref": "./common.schema.json#/$defs/ref"
+    },
+    "run_id": {
+      "$ref": "./common.schema.json#/$defs/id"
+    },
+    "agent_instance_ref": {
+      "$ref": "./common.schema.json#/$defs/ref"
+    },
+    "result": {
+      "enum": [
+        "satisfied",
+        "partial",
+        "failed",
+        "blocked"
+      ]
+    },
+    "what_worked": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "what_failed": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "remaining_risks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "improvement_candidate_refs": {
+      "type": "array",
+      "items": {
+        "$ref": "./common.schema.json#/$defs/ref"
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

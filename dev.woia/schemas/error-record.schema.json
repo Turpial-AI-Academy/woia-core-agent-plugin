@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://woia.dev/schemas/core/v0.5.0/error-record.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "task_ref",
+    "run_id",
+    "phase",
+    "summary",
+    "classification",
+    "first_causal_error",
+    "state",
+    "recovery"
+  ],
+  "properties": {
+    "schema": {
+      "const": "dev.woia.error-record/v1"
+    },
+    "id": {
+      "$ref": "./common.schema.json#/$defs/id"
+    },
+    "task_ref": {
+      "$ref": "./common.schema.json#/$defs/ref"
+    },
+    "run_id": {
+      "$ref": "./common.schema.json#/$defs/id"
+    },
+    "phase": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "classification": {
+      "enum": [
+        "input",
+        "provider-unavailable",
+        "runtime",
+        "tool",
+        "validation",
+        "authority",
+        "effect-unknown",
+        "external-system",
+        "internal"
+      ]
+    },
+    "first_causal_error": {
+      "type": "string",
+      "minLength": 1
+    },
+    "state": {
+      "enum": [
+        "open",
+        "recoverable",
+        "blocked",
+        "resolved",
+        "superseded"
+      ]
+    },
+    "recovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "strategy",
+        "safe_to_retry"
+      ],
+      "properties": {
+        "strategy": {
+          "type": "string",
+          "minLength": 1
+        },
+        "safe_to_retry": {
+          "type": "boolean"
+        },
+        "checkpoint_ref": {
+          "anyOf": [
+            {
+              "$ref": "./common.schema.json#/$defs/ref"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

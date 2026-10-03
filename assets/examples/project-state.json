@@ -1,0 +1,46 @@
+{
+  "schema": "dev.woia.core-project-state/v1",
+  "core_version": "0.5.0",
+  "project": {
+    "id": "example-marketing-project",
+    "department": "marketing",
+    "orchestrator": "woia-marketing",
+    "organization_ref": "org:example"
+  },
+  "root_agent_binding": {
+    "status": "bound",
+    "instructions_file": "AGENTS.md",
+    "managed_block_id": "WOIA_PROJECT_OPERATING_CONTRACT",
+    "last_reconciled_at": "2026-10-03T17:00:00-03:00"
+  },
+  "provider_resolution": {
+    "installation_policy": "ask_once",
+    "installation_authorization": "not_required",
+    "status": "runtime_ready",
+    "providers": [],
+    "install_plan": [],
+    "install_plan_id": null,
+    "authorized_plan_id": null
+  },
+  "custom_agents": {
+    "status": "loaded",
+    "materialized_generation": 1,
+    "loaded_generation": 1,
+    "roles": []
+  },
+  "orchestration": {
+    "status": "runtime_ready",
+    "runtime_restart_required": false,
+    "current_task_id": null,
+    "current_run_id": null
+  },
+  "storage": {
+    "tasks": ".woia/tasks",
+    "receipts": ".woia/receipts",
+    "overlays": ".woia/overlays",
+    "snapshots": ".woia/snapshots",
+    "effects": ".woia/effects",
+    "checkpoints": ".woia/checkpoints"
+  },
+  "updated_at": "2026-10-03T17:00:00-03:00"
+}

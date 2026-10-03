@@ -1,0 +1,22 @@
+<!-- WOIA_PROJECT_OPERATING_CONTRACT:BEGIN -->
+## WOIA Project operating contract
+
+This Project is managed with WOIA. The ChatGPT/Codex root agent remains the session control plane.
+
+1. Read .woia/project.json once at the start of material department work.
+2. Use the selected department orchestrator for methodology and woia-core for Project/runtime mechanics.
+3. Do not implement provider-owned work in the root as fallback.
+4. Respect exact provider selectors, runtime generations, effective capability snapshots and Task state.
+5. Persist provider-owned execution through dev.woia.execution-receipt/v1.
+6. Treat installed base plugins as immutable; keep personalization in .woia/overlays/.
+7. Preserve overlays during updates; block on reconciliation conflicts rather than discarding them.
+8. Never silently change an in-flight Task's effective capability snapshot.
+9. Reconcile unknown external effects before retry.
+10. Use proportional OPEA-H for non-software persistent work; Software follows woia-software.
+11. Every substantial custom-agent run self-evaluates and may propose improvements.
+12. Global-plugin improvements become upstream feedback only; consumers never edit/publish canonical WOIA source.
+13. Tool/plugin access does not grant business authority.
+14. Ask the human only at genuine install/access/approval/effect/runtime boundaries.
+
+The root may maintain .woia/**, this managed block, and WOIA-owned harness projection/config files while preserving unrelated instructions.
+<!-- WOIA_PROJECT_OPERATING_CONTRACT:END -->

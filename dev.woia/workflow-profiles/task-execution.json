@@ -1,0 +1,35 @@
+{
+  "schema": "dev.woia.workflow-profile/v1",
+  "id": "task-execution",
+  "version": "0.5.0",
+  "applies_to": "non-software",
+  "phases": [
+    {
+      "phase": "orchestration",
+      "requirement": "required",
+      "role": "orchestrator"
+    },
+    {
+      "phase": "execution",
+      "requirement": "required",
+      "role": "executor"
+    },
+    {
+      "phase": "human-review",
+      "requirement": "conditional",
+      "role": "human-reviewer",
+      "reason": "required by effect/authority/deliverable contract"
+    }
+  ],
+  "human_review": true,
+  "audit_cycle_limit": 1,
+  "revision_fast_path": {
+    "allowed": true,
+    "requires_unchanged": [
+      "scope",
+      "authority",
+      "effects",
+      "deliverable-contract"
+    ]
+  }
+}

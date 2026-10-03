@@ -1,0 +1,250 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://woia.dev/schemas/core/v0.5.0/execution-receipt.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "receipt_id",
+    "run_id",
+    "task_ref",
+    "phase",
+    "role",
+    "agent_instance_ref",
+    "execution",
+    "runtime",
+    "source",
+    "result",
+    "outputs",
+    "evidence",
+    "effects",
+    "gate",
+    "blockers"
+  ],
+  "properties": {
+    "schema": {
+      "const": "dev.woia.execution-receipt/v1"
+    },
+    "receipt_id": {
+      "$ref": "./common.schema.json#/$defs/id"
+    },
+    "run_id": {
+      "$ref": "./common.schema.json#/$defs/id"
+    },
+    "task_ref": {
+      "$ref": "./common.schema.json#/$defs/ref"
+    },
+    "phase": {
+      "type": "string",
+      "minLength": 1
+    },
+    "role": {
+      "enum": [
+        "orchestrator",
+        "planner",
+        "executor",
+        "auditor",
+        "service",
+        "human-reviewer"
+      ]
+    },
+    "agent_instance_ref": {
+      "$ref": "./common.schema.json#/$defs/ref"
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "provider",
+            "direct",
+            "human"
+          ]
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "$ref": "./common.schema.json#/$defs/providerIdentity"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "explicit_skill_invocation": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^\\$[a-z0-9]+(?:-[a-z0-9]+)*$"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "provider"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "required": [
+              "provider",
+              "explicit_skill_invocation"
+            ],
+            "properties": {
+              "provider": {
+                "not": {
+                  "type": "null"
+                }
+              },
+              "explicit_skill_invocation": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "binding_ref",
+        "materialized_generation",
+        "loaded_generation"
+      ],
+      "properties": {
+        "binding_ref": {
+          "$ref": "./common.schema.json#/$defs/ref"
+        },
+        "materialized_generation": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "loaded_generation": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "input_anchor",
+        "output_anchor"
+      ],
+      "properties": {
+        "input_anchor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "output_anchor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "result": {
+      "enum": [
+        "PASS",
+        "BLOCKED",
+        "INCOMPLETE",
+        "FINDINGS"
+      ]
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "$ref": "./common.schema.json#/$defs/resourceRef"
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "effects": {
+      "type": "array",
+      "items": {
+        "$ref": "./common.schema.json#/$defs/ref"
+      }
+    },
+    "gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "items"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "satisfied",
+            "pending",
+            "blocked"
+          ]
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "item",
+              "status",
+              "evidence"
+            ],
+            "properties": {
+              "item": {
+                "type": "string",
+                "minLength": 1
+              },
+              "status": {
+                "enum": [
+                  "satisfied",
+                  "pending",
+                  "blocked"
+                ]
+              },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "$ref": "./common.schema.json#/$defs/blocker"
+      }
+    }
+  }
+}

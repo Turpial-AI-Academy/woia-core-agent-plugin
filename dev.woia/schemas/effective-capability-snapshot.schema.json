@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://woia.dev/schemas/core/v0.5.0/effective-capability-snapshot.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "task_ref",
+    "capability",
+    "base",
+    "overlays",
+    "composed_digest",
+    "created_at"
+  ],
+  "properties": {
+    "schema": {
+      "const": "dev.woia.effective-capability-snapshot/v1"
+    },
+    "id": {
+      "$ref": "./common.schema.json#/$defs/id"
+    },
+    "task_ref": {
+      "$ref": "./common.schema.json#/$defs/ref"
+    },
+    "capability": {
+      "type": "string",
+      "minLength": 1
+    },
+    "base": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "plugin",
+        "version",
+        "selector"
+      ],
+      "properties": {
+        "plugin": {
+          "$ref": "./common.schema.json#/$defs/id"
+        },
+        "version": {
+          "$ref": "./common.schema.json#/$defs/semver"
+        },
+        "selector": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "overlays": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "revision"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "./common.schema.json#/$defs/id"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      }
+    },
+    "organization_profile_revision": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
+    },
+    "department_profile_revision": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
+    },
+    "composed_digest": {
+      "$ref": "./common.schema.json#/$defs/sha256"
+    },
+    "created_at": {
+      "$ref": "./common.schema.json#/$defs/datetime"
+    }
+  }
+}

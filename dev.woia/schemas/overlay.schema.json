@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://woia.dev/schemas/core/v0.5.0/overlay.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "revision",
+    "plugin",
+    "scope",
+    "directives",
+    "resources",
+    "compatibility",
+    "source_improvement_refs"
+  ],
+  "properties": {
+    "schema": {
+      "const": "dev.woia.plugin-overlay/v1"
+    },
+    "id": {
+      "$ref": "./common.schema.json#/$defs/id"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "plugin": {
+      "$ref": "./common.schema.json#/$defs/id"
+    },
+    "scope": {
+      "enum": [
+        "organization",
+        "department",
+        "project"
+      ]
+    },
+    "directives": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instructions",
+        "preferences"
+      ],
+      "properties": {
+        "instructions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "preferences": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "$ref": "./common.schema.json#/$defs/resourceRef"
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "last_validated_base",
+        "status",
+        "conflicts"
+      ],
+      "properties": {
+        "last_validated_base": {
+          "$ref": "./common.schema.json#/$defs/semver"
+        },
+        "status": {
+          "enum": [
+            "compatible",
+            "unverified",
+            "conflict"
+          ]
+        },
+        "conflicts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "source_improvement_refs": {
+      "type": "array",
+      "items": {
+        "$ref": "./common.schema.json#/$defs/ref"
+      }
+    }
+  }
+}
