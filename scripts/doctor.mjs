@@ -6,7 +6,6 @@ import { validateCurrentToolchain } from "./lib/toolchain.mjs";
 const toolchain = await validateCurrentToolchain(ROOT);
 for (const required of [
   "plugin.json",
-  "CHECKSUMS.sha256",
   "mise.toml",
   "mise.lock",
   "package.json",
