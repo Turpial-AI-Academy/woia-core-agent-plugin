@@ -8,6 +8,8 @@ Report reusable durable execution/observation evidence, invalidated evidence, fr
 
 Under the simplified archive-integrity contract, `CHECKSUMS.sha256` is not a required source or release artifact. The checksum scripts remain optional maintenance diagnostics, not release gates.
 
+Managed clean-Linux parity is container-engine neutral. `docker` is the default CLI for compatibility; set `WOIA_CONTAINER_ENGINE=podman` (or another Docker-compatible local OCI CLI) to use a zero-cost alternative. Hosted or paid container services are not mandatory.
+
 Before first release:
 
 ~~~text
