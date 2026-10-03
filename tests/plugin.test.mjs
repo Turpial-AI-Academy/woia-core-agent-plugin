@@ -632,15 +632,18 @@ test("pnpm run refuses stale dependencies without installing them implicitly", a
   await assert.rejects(access(path.join(fixture.root, "probe-ran")), { code: "ENOENT" });
 });
 
-test("local Docker parity installs in an ephemeral workspace without host node_modules", async () => {
+test("local OCI container parity is engine-neutral and excludes host node_modules", async () => {
   const packageJson = JSON.parse(await readFile(path.join(ROOT, "package.json"), "utf8"));
   const mise = await readFile(path.join(ROOT, "mise.toml"), "utf8");
   const dockerJob = await readFile(path.join(ROOT, "scripts/lib/docker-job.mjs"), "utf8");
-  const { dockerRunArgs } = await import("../scripts/lib/docker-job.mjs");
+  const { dockerRunArgs, resolveContainerEngine } = await import("../scripts/lib/docker-job.mjs");
   assert.equal(packageJson.scripts["ci:extended"], "node scripts/ci-extended.mjs");
   assert.equal(packageJson.scripts["jobs:local"], "node scripts/jobs-local.mjs");
   assert.match(mise, /tasks\."ci:extended"/);
   assert.match(mise, /tasks\."jobs:local"/);
+  assert.equal(resolveContainerEngine({}), "docker");
+  assert.equal(resolveContainerEngine({ WOIA_CONTAINER_ENGINE: "podman" }), "podman");
+  assert.throws(() => resolveContainerEngine({ WOIA_CONTAINER_ENGINE: "podman --bad" }), /simple executable name/);
   const args = dockerRunArgs(ROOT, "node:24.21.0-bookworm", "11.19.0");
   const command = args.at(-1);
   assert.ok(args.includes("--rm"));
@@ -651,6 +654,7 @@ test("local Docker parity installs in an ephemeral workspace without host node_m
   assert.match(command, /npm install --global pnpm@11\.19\.0/);
   assert.match(command, /pnpm install --frozen-lockfile/);
   assert.match(command, /node scripts\/ci-fast\.mjs/);
+  assert.match(dockerJob, /WOIA_CONTAINER_ENGINE/);
   assert.match(dockerJob, /network access is required/);
   assert.match(dockerJob, /scripts\/ci-fast\.mjs/);
 });
