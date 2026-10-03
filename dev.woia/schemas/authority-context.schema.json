@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://woia.dev/schemas/core/v0.5.0/authority-context.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "id",
+    "revision",
+    "principal",
+    "department",
+    "task_ref",
+    "grants",
+    "denials"
+  ],
+  "properties": {
+    "schema": {
+      "const": "dev.woia.authority-context/v1"
+    },
+    "id": {
+      "$ref": "./common.schema.json#/$defs/id"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "principal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "id"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "human",
+            "agent-instance"
+          ]
+        },
+        "id": {
+          "$ref": "./common.schema.json#/$defs/id"
+        }
+      }
+    },
+    "department": {
+      "$ref": "./common.schema.json#/$defs/id"
+    },
+    "task_ref": {
+      "$ref": "./common.schema.json#/$defs/ref"
+    },
+    "grants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "capability",
+          "operations",
+          "effect_classes"
+        ],
+        "properties": {
+          "capability": {
+            "type": "string",
+            "minLength": 1
+          },
+          "operations": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "effect_classes": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "none",
+                "read",
+                "local-write",
+                "external-write",
+                "communication",
+                "publication",
+                "financial",
+                "security-sensitive",
+                "physical"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "denials": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "approval_refs": {
+      "type": "array",
+      "items": {
+        "$ref": "./common.schema.json#/$defs/ref"
+      }
+    }
+  }
+}

@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://woia.dev/schemas/core/v0.5.0/cross-department-message.schema.json",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "request_id",
+        "correlation_id",
+        "origin",
+        "target_department",
+        "requested_capability",
+        "objective",
+        "context_refs",
+        "resource_refs",
+        "constraints",
+        "priority",
+        "expected_output"
+      ],
+      "properties": {
+        "schema": {
+          "const": "dev.woia.cross-department-request/v1"
+        },
+        "request_id": {
+          "$ref": "./common.schema.json#/$defs/id"
+        },
+        "correlation_id": {
+          "$ref": "./common.schema.json#/$defs/id"
+        },
+        "origin": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "department",
+            "project_ref",
+            "task_ref"
+          ],
+          "properties": {
+            "department": {
+              "$ref": "./common.schema.json#/$defs/id"
+            },
+            "project_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "task_ref": {
+              "$ref": "./common.schema.json#/$defs/ref"
+            }
+          }
+        },
+        "target_department": {
+          "$ref": "./common.schema.json#/$defs/id"
+        },
+        "requested_capability": {
+          "type": "string",
+          "minLength": 1
+        },
+        "objective": {
+          "type": "string",
+          "minLength": 1
+        },
+        "context_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "./common.schema.json#/$defs/resourceRef"
+          }
+        },
+        "resource_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "./shared-resource-reference.schema.json"
+          }
+        },
+        "constraints": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "priority": {
+          "enum": [
+            "low",
+            "normal",
+            "high",
+            "urgent"
+          ]
+        },
+        "expected_output": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reply_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "request_id",
+        "correlation_id",
+        "receiver",
+        "status",
+        "output_refs",
+        "evidence",
+        "blockers"
+      ],
+      "properties": {
+        "schema": {
+          "const": "dev.woia.cross-department-response/v1"
+        },
+        "request_id": {
+          "$ref": "./common.schema.json#/$defs/id"
+        },
+        "correlation_id": {
+          "$ref": "./common.schema.json#/$defs/id"
+        },
+        "receiver": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "department",
+            "project_ref",
+            "task_ref"
+          ],
+          "properties": {
+            "department": {
+              "$ref": "./common.schema.json#/$defs/id"
+            },
+            "project_ref": {
+              "type": "string",
+              "minLength": 1
+            },
+            "task_ref": {
+              "$ref": "./common.schema.json#/$defs/ref"
+            }
+          }
+        },
+        "status": {
+          "enum": [
+            "accepted",
+            "completed",
+            "blocked",
+            "rejected"
+          ]
+        },
+        "output_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "./common.schema.json#/$defs/resourceRef"
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "$ref": "./common.schema.json#/$defs/blocker"
+          }
+        }
+      }
+    }
+  ]
+}

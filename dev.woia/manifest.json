@@ -22,7 +22,11 @@
     "checkpoint",
     "self-evaluation",
     "error-record",
-    "workflow-profile"
+    "workflow-profile",
+    "organization-registry",
+    "authority-context",
+    "shared-resource-reference",
+    "cross-department-message"
   ],
   "workflow_profiles": [
     "direct-service",

@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://woia.dev/schemas/core/v0.5.0/organization-registry.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "organization",
+    "departments",
+    "shared_resources",
+    "revision"
+  ],
+  "properties": {
+    "schema": {
+      "const": "dev.woia.organization-registry/v1"
+    },
+    "organization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "./common.schema.json#/$defs/id"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "departments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "orchestrator",
+          "marketplace",
+          "project_ref"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "./common.schema.json#/$defs/id"
+          },
+          "orchestrator": {
+            "$ref": "./common.schema.json#/$defs/id"
+          },
+          "marketplace": {
+            "$ref": "./common.schema.json#/$defs/id"
+          },
+          "project_ref": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "shared_resources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "capability_plugin",
+          "system_of_record",
+          "classification"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "./common.schema.json#/$defs/id"
+          },
+          "capability_plugin": {
+            "$ref": "./common.schema.json#/$defs/id"
+          },
+          "system_of_record": {
+            "type": "string",
+            "minLength": 1
+          },
+          "classification": {
+            "enum": [
+              "public",
+              "internal",
+              "confidential",
+              "restricted"
+            ]
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
