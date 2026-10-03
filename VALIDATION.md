@@ -6,13 +6,14 @@ Capability regressions should prove bounded amendments of healthy authoritative 
 
 Report reusable durable execution/observation evidence, invalidated evidence, freshly established evidence, and assumptions/inferences that are not evidence. Independently inspect reused evidence and rerun affected checks plus mandatory invariants when changes invalidate it. This refinement does not reduce the formal gates below.
 
+Under the simplified archive-integrity contract, `CHECKSUMS.sha256` is not a required source or release artifact. The checksum scripts remain optional maintenance diagnostics, not release gates.
+
 Before first release:
 
 ~~~text
 # after README.plugin.md -> README.md and placeholder replacement
 mise install
 mise run bootstrap
-pnpm run checksums:generate
 mise run doctor
 mise run validate
 mise run test
