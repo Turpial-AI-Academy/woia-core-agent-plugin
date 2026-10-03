@@ -36,6 +36,12 @@ Each overlay records plugin identity, ID/revision/scope, declarative directives/
 
 Compatibility is compatible, unverified, or conflict. Never delete a conflict just to make an update green.
 
+After semantic review of a candidate base, update only compatibility metadata with:
+
+`node scripts/set-overlay-compatibility.mjs --file <overlay.json> --base-version <X.Y.Z> --status compatible|unverified|conflict [--conflict <description>]`
+
+The helper preserves the customization payload and increments revision only when compatibility state changes.
+
 ## Update reconciliation
 
 Preserve overlay bytes/revision first. Evaluate only changed plugin semantics intersecting the overlay. Compatible updates may compose a new effective capability. Unverified/conflicting updates keep the current effective capability for affected work until reconciliation succeeds.
@@ -45,6 +51,12 @@ Preserve overlay bytes/revision first. Evaluate only changed plugin semantics in
 Persistent Tasks pin exact base plugin/version/selector, relevant profile revisions, overlay IDs/revisions, and a composed digest.
 
 An update affects new Tasks by default. Existing Tasks keep their pinned snapshot unless explicitly migrated/rebound.
+
+Create a new/rebound Task pin with:
+
+`node scripts/create-capability-snapshot.mjs --task-id <task> --capability <semantic-capability> --plugin <plugin> --version <X.Y.Z> --selector <immutable-selector> [--overlay <overlay.json> ...] --output <snapshot.json>`
+
+The helper rejects unverified/conflicting overlays and computes a deterministic SHA-256 composition digest.
 
 ## Self-evaluation quality
 

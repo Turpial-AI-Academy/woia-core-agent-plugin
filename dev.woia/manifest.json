@@ -40,5 +40,22 @@
     "foundation_repository": "Therenovatioai/woia-foundation",
     "asps_repository": "Turpial-AI-Academy/asps-agent-plugin",
     "extraction_policy": "carry-forward-invariants-not-monolith-runtime"
-  }
+  },
+  "deterministic_tools": [
+    {
+      "id": "project.bootstrap",
+      "path": "skills/project-runtime/scripts/bootstrap-project.mjs",
+      "purpose": "Idempotently create/reconcile Project state and the managed AGENTS block."
+    },
+    {
+      "id": "overlay.compatibility.set",
+      "path": "skills/project-improvement/scripts/set-overlay-compatibility.mjs",
+      "purpose": "Change overlay compatibility metadata without changing customization payload."
+    },
+    {
+      "id": "capability.snapshot.create",
+      "path": "skills/project-improvement/scripts/create-capability-snapshot.mjs",
+      "purpose": "Create a deterministic effective-capability pin/digest for a Task."
+    }
+  ]
 }

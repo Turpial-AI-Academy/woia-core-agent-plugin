@@ -37,6 +37,12 @@ Autonomously:
 
 Do not make the user request these setup steps individually.
 
+When command execution is available, prefer the bundled deterministic filesystem helper:
+
+`node scripts/bootstrap-project.mjs --root <project-root> --project-id <id> --department <department> --orchestrator <plugin> [--organization-ref <ref>]`
+
+It creates only WOIA-owned state directories, preserves unrelated root `AGENTS.md` instructions, reconciles only the managed WOIA block/state, and fails closed on Project identity conflicts.
+
 ## Project layout
 
 .woia/project.json plus tasks/, task-cells/, agents/, bindings/, receipts/, effects/, checkpoints/, improvements/, overlays/, and snapshots/ contain durable Project-local operating state.
@@ -72,7 +78,7 @@ Do not rerun bootstrap as ceremony.
 7. require a fresh runtime generation;
 8. compose new effective capabilities for new Tasks.
 
-Never overwrite or delete an overlay to make an update succeed.
+Never overwrite or delete an overlay to make an update succeed. Use the deterministic compatibility/snapshot helpers from `project-improvement` before composing a new Task capability pin.
 
 ## Custom-agent materialization
 
