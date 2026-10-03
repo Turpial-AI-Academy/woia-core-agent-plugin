@@ -7,7 +7,7 @@ export function dockerRunArgs(root, image, pnpmVersion) {
     "set -eu",
     "mkdir -p /workspace",
     "tar --exclude='./node_modules' --exclude='./node_modules/**' --exclude='./.agent-work' --exclude='./.agent-work/**' -C /source -cf /tmp/plugin-source.tar .",
-    "tar -C /workspace -xf /tmp/plugin-source.tar",
+    "tar --no-same-owner -C /workspace -xf /tmp/plugin-source.tar",
     "rm -f /tmp/plugin-source.tar",
     "if [ -e /workspace/node_modules ]; then echo 'workspace unexpectedly contains host node_modules' >&2; exit 1; fi",
     "npm install --global pnpm@" + pnpmVersion,
