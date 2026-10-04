@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { promisify } from "node:util";
+import { isDeepStrictEqual, promisify } from "node:util";
 import Ajv2020 from "ajv/dist/2020.js";
 
 // Run authoring tests against either source or an independently extracted release payload.
@@ -985,4 +985,83 @@ test("a real crash after canonical S2 persistence resumes only the root session 
   assert.equal(recoveredTask.state, "blocked");
   assert.equal(recoveredTask.blockers.length, 1);
   assert.deepEqual(recoveredTask.current_checkpoint_ref, ref("Checkpoint", checkpoints[0].id));
+});
+
+test("interleaved failures for one Task preserve newer unknown effects and both agents' continuation", async t => {
+  const { root, task } = await fixture(t, { agents: [{ id: "agent-a", role: "executor" }, { id: "agent-b", role: "auditor" }] });
+  await startSession({ root, sessionId: "S1", loadedGeneration: GENERATION });
+  const bindingA = await activate(root, "S1", "agent-a", "thread-interleaved-a");
+  const bindingB = await activate(root, "S1", "agent-b", "thread-interleaved-b");
+  const checkpointBytes = async id => {
+    const directory = path.join(root, ".woia", "checkpoints");
+    for (const file of await readdir(directory)) {
+      if (!file.endsWith(".json")) continue;
+      const bytes = await readFile(path.join(directory, file));
+      if (JSON.parse(bytes).id === id) return bytes;
+    }
+    assert.fail(`Missing checkpoint ${id}`);
+  };
+  const interrupted = await faultOperation(root, "failThread", { sessionId: "S1", agentId: "agent-a", reason: "Agent A lost its thread" }, { kind: "write-eio", target: ["tasks"] });
+  assert.equal(interrupted.ok, false);
+  assert.equal(interrupted.error.code, "EIO");
+  assert.equal(interrupted.hits, 1);
+  const initialCheckpoints = await records(root, "checkpoints");
+  assert.equal(initialCheckpoints.length, 1, "A's checkpoint must exist before its Task write fails");
+  const checkpointA = initialCheckpoints[0];
+  valid("checkpoint", checkpointA);
+  const bytesA = await checkpointBytes(checkpointA.id);
+  const failureA = (await json(path.join(root, ".woia", "runtime", "current-session.json"))).failed_agents["agent-a"];
+  assert.equal(checkpointA.id, failureA.checkpoint_id);
+  assert.deepEqual(await record(root, "tasks", task.id), task);
+  const effectB = {
+    schema: "dev.woia.effect-record/v1", id: "effect-b-unknown", task_ref: ref("Task", task.id), run_id: "synthetic-run-b",
+    effect_key: "effect-b", effect_class: "communication", action: { capability: "test-capability", operation: "send", target_ref: "synthetic:target-b" },
+    action_digest: `sha256:${"b".repeat(64)}`, state: "unknown", observed_at: "2026-10-04T12:00:00Z",
+    evidence: ["Synthetic unknown outcome observed after A's interrupted failure"], prior_effect_ref: null, transition: "observation",
+  };
+  valid("effect-record", effectB);
+  await writeJson(path.join(root, ".woia", "effects", "effect-b.json"), effectB);
+  const blockedB = await failThread({ root, sessionId: "S1", agentId: "agent-b", reason: "Agent B lost its thread" });
+  assert.equal(blockedB.action, "BLOCKED");
+  const checkpointB = blockedB.checkpoint;
+  valid("checkpoint", checkpointB);
+  assert.deepEqual(checkpointB.unknown_effect_refs, [ref("EffectRecord", effectB.id)]);
+  const bytesB = await checkpointBytes(checkpointB.id);
+  const taskAfterB = await record(root, "tasks", task.id);
+  assert.deepEqual(taskAfterB.current_checkpoint_ref, ref("Checkpoint", checkpointB.id));
+  const recoveredA = await failThread({ root, sessionId: "S1", agentId: "agent-a", reason: "Retry A after B's newer continuation" });
+  assert.equal(recoveredA.action, "BLOCKED");
+  assert.equal(recoveredA.fresh_root_session_required, true);
+  assert.equal(recoveredA.blocker.id, failureA.blocker_id);
+  const checkpointC = recoveredA.checkpoint;
+  valid("checkpoint", checkpointC);
+  assert.notEqual(checkpointC.id, checkpointA.id);
+  assert.notEqual(checkpointC.id, checkpointB.id);
+  for (const field of ["completed_units", "pending_units", "input_refs", "artifact_refs", "effect_refs", "unknown_effect_refs", "resume_preconditions"]) {
+    for (const value of [...checkpointA[field], ...checkpointB[field]]) {
+      assert.ok(checkpointC[field].some(candidate => isDeepStrictEqual(candidate, value)), `Recovered ${field} must preserve both prior continuations`);
+    }
+  }
+  assert.deepEqual(checkpointC.unknown_effect_refs, [ref("EffectRecord", effectB.id)]);
+  const recoveredTask = await record(root, "tasks", task.id);
+  valid("task", recoveredTask);
+  assert.equal(recoveredTask.state, "blocked");
+  assert.equal(recoveredTask.revision, taskAfterB.revision + 1);
+  assert.equal(checkpointC.task_revision, recoveredTask.revision);
+  assert.deepEqual(recoveredTask.current_checkpoint_ref, ref("Checkpoint", checkpointC.id));
+  assert.deepEqual(new Set(recoveredTask.blockers.map(value => value.id)), new Set([failureA.blocker_id, blockedB.blocker.id]));
+  assert.equal(recoveredTask.blockers.length, 2);
+  const repeatedA = await failThread({ root, sessionId: "S1", agentId: "agent-a", reason: "Repeat recovered A" });
+  assert.equal(repeatedA.action, "BLOCKED");
+  assert.deepEqual(repeatedA.checkpoint, checkpointC);
+  assert.equal(repeatedA.blocker.id, failureA.blocker_id);
+  assert.deepEqual(await record(root, "tasks", task.id), recoveredTask);
+  assert.deepEqual(await checkpointBytes(checkpointA.id), bytesA);
+  assert.deepEqual(await checkpointBytes(checkpointB.id), bytesB);
+  assert.equal((await records(root, "checkpoints")).length, 3);
+  const bindings = await records(root, "bindings");
+  assert.deepEqual(new Set(bindings.map(binding => binding.id)), new Set([bindingA.id, bindingB.id]));
+  assert.ok(bindings.every(binding => binding.state === "failed"));
+  assert.equal(new Set(bindings.map(binding => binding.native_identifiers.thread_id)).size, 2);
+  assert.equal((await records(root, "runtime/runs")).length, 0);
 });

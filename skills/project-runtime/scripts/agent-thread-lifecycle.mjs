@@ -246,8 +246,8 @@ async function block(ctx, reason) {
     agent.value.revision++;
     await save(agent.file, agent.value);
   }
-  const checkpointFile = recordPath(root, "checkpoints", failure.checkpoint_id);
-  const savedCheckpoint = await maybeJson(checkpointFile);
+  let checkpointFile = recordPath(root, "checkpoints", failure.checkpoint_id);
+  let savedCheckpoint = await maybeJson(checkpointFile);
   if (savedCheckpoint && (failure.complete || task.value.blockers.some(value => value.id === blocker.id))) {
     if (!failure.complete) { failure.complete = true; await saveSession(root, session); }
     return { action: "BLOCKED", fresh_root_session_required: true, blocker, checkpoint: savedCheckpoint, binding: binding?.value ?? null };
@@ -255,16 +255,31 @@ async function block(ctx, reason) {
   let previous = null;
   if (task.value.current_checkpoint_ref) previous = (await find(root, "checkpoints", task.value.current_checkpoint_ref.id, "dev.woia.checkpoint/v1")).value;
   const effects = (await records(root, "effects")).map(row => row.value).filter(value => value.task_ref?.id === task.value.id);
-  const unknownEffects = new Map((previous?.unknown_effect_refs ?? []).map(value => [value.id, value]));
+  const pendingUnknown = effects.filter(value => value.state === "unknown");
+  if (savedCheckpoint && (savedCheckpoint.task_revision !== task.value.revision + 1
+    || pendingUnknown.some(effect => !savedCheckpoint.unknown_effect_refs.some(value => value.id === effect.id)))) {
+    // Another agent may have advanced this Task after our checkpoint was written but
+    // before its Task pointer was saved. Preserve that snapshot and reconcile forward.
+    failure.checkpoint_history = [...new Set([...(failure.checkpoint_history ?? []), savedCheckpoint.id])];
+    failure.checkpoint_id = id("checkpoint");
+    await saveSession(root, session);
+    checkpointFile = recordPath(root, "checkpoints", failure.checkpoint_id);
+    savedCheckpoint = null;
+  }
+  const history = await Promise.all((failure.checkpoint_history ?? []).map(async identity => (await find(root, "checkpoints", identity, "dev.woia.checkpoint/v1")).value));
+  const continuations = [...history, previous].filter(Boolean);
+  const strings = field => [...new Set(continuations.flatMap(value => value[field] ?? []))];
+  const references = field => [...new Map(continuations.flatMap(value => value[field] ?? []).map(value => [`${value.kind ?? value.type}:${value.id}`, value])).values()];
+  const unknownEffects = new Map(references("unknown_effect_refs").map(value => [value.id, value]));
   for (const effect of effects.filter(value => value.state === "unknown")) unknownEffects.set(effect.id, ref("EffectRecord", effect.id));
   task.value.revision++;
   const checkpoint = savedCheckpoint ?? {
     schema: "dev.woia.checkpoint/v1", id: failure.checkpoint_id, task_ref: ref("Task", task.value.id), task_revision: task.value.revision,
-    task_state: "blocked", current_phase: task.value.current_phase || previous?.current_phase || "runtime-recovery", completed_units: previous?.completed_units ?? [],
-    pending_units: [...new Set([...(previous?.pending_units ?? []), `Resume AgentInstance ${agent.value.id} after root session ${session.id}`])],
-    input_refs: previous?.input_refs ?? [], artifact_refs: previous?.artifact_refs ?? [],
-    effect_refs: [...new Map([...(previous?.effect_refs ?? []), ...effects.map(value => ref("EffectRecord", value.id))].map(value => [value.id, value])).values()],
-    unknown_effect_refs: [...unknownEffects.values()], resume_preconditions: [...new Set([...(previous?.resume_preconditions ?? []), recovery])],
+    task_state: "blocked", current_phase: task.value.current_phase || previous?.current_phase || "runtime-recovery", completed_units: strings("completed_units"),
+    pending_units: [...new Set([...strings("pending_units"), `Resume AgentInstance ${agent.value.id} after root session ${session.id}`])],
+    input_refs: references("input_refs"), artifact_refs: references("artifact_refs"),
+    effect_refs: [...new Map([...references("effect_refs"), ...effects.map(value => ref("EffectRecord", value.id))].map(value => [value.id, value])).values()],
+    unknown_effect_refs: [...unknownEffects.values()], resume_preconditions: [...new Set([...strings("resume_preconditions"), recovery])],
     next_action: { type: "human-action", summary: recovery, ref: ref("AgentInstance", agent.value.id) }, created_at: failure.created_at,
   };
   if (!savedCheckpoint) await save(checkpointFile, checkpoint, true);
