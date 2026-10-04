@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Remove unconsumed private authoring exports while preserving Core runtime and public contracts.
+- Align maintenance documentation with the container-engine-neutral local parity contract.
+
 ## 0.5.0 - 2026-10-03
 
 - Establish WOIA Core as a portable cross-department Agent Plugin.

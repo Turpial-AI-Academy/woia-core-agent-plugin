@@ -1,5 +1,7 @@
 # Release
 
+Current published baseline: `v0.5.0`. Current `main` may contain unreleased post-release cleanup; publishing that source requires a new SemVer release and must never move or replace `v0.5.0`.
+
 WOIA Core releases are produced only by authorized Turpial AI Academy WOIA maintainers/developers through the woia-ecosystem Factory.
 
 Before a release candidate:
