@@ -11,13 +11,13 @@ export const SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.jso
 export const SCHEMA_FILE = path.join(ROOT, "scripts", "schemas", "agent-plugins-1.0.0.plugin.schema.json");
 export const MCP_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json";
 export const MCP_SCHEMA_FILE = path.join(ROOT, "scripts", "schemas", "agent-plugins-1.0.0.mcp.schema.json");
-export const PORTABLE_ROOT_FILES = Object.freeze([
+const PORTABLE_ROOT_FILES = Object.freeze([
   "plugin.json",
   "README.md",
   "CHANGELOG.md",
   "LICENSE",
 ]);
-export const EXTENSION_NAMESPACE_RE = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$/;
+const EXTENSION_NAMESPACE_RE = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$/;
 
 let manifestValidatorPromise;
 let mcpValidatorPromise;
@@ -93,7 +93,7 @@ export async function portablePayloadPaths(root = ROOT) {
   return selected.sort(comparePaths);
 }
 
-export async function checksumPayloadPaths(root = ROOT) {
+async function checksumPayloadPaths(root = ROOT) {
   return (await portablePayloadPaths(root)).filter((relativePath) => relativePath !== "CHECKSUMS.sha256");
 }
 
@@ -169,7 +169,7 @@ function validateSkillProperties(data, directoryName, relativePath) {
   return warnings;
 }
 
-export async function markdownFiles(root = ROOT) {
+async function markdownFiles(root = ROOT) {
   const repositoryPaths = await gitCandidatePaths(root);
   return repositoryPaths.filter((relativePath) => /\.md(?:\.template)?$/i.test(relativePath)).sort(comparePaths);
 }
@@ -369,13 +369,13 @@ export async function validateRootSafety(root = ROOT) {
   }
 }
 
-export async function sha256File(root, relativePath) {
+async function sha256File(root, relativePath) {
   const hash = createHash("sha256");
   hash.update(await readFile(filePath(root, relativePath)));
   return hash.digest("hex");
 }
 
-export async function expectedChecksumLines(root = ROOT) {
+async function expectedChecksumLines(root = ROOT) {
   const lines = [];
   for (const relativePath of await checksumPayloadPaths(root)) {
     lines.push(`${await sha256File(root, relativePath)}  ${relativePath}`);

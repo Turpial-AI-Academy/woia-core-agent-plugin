@@ -17,7 +17,7 @@ function readOctal(buffer, start, length) {
   return parsed;
 }
 
-export function listTarEntries(buffer) {
+function listTarEntries(buffer) {
   const files = [];
   let offset = 0;
   let sawEnd = false;
@@ -63,7 +63,7 @@ export function listTarEntries(buffer) {
   return files.sort((left, right) => left.path < right.path ? -1 : left.path > right.path ? 1 : 0);
 }
 
-export async function archiveEntries(root, treeish = "HEAD") {
+async function archiveEntries(root, treeish = "HEAD") {
   const temporaryDirectory = await mkdtemp(path.join(os.tmpdir(), "plugin-archive-"));
   const archivePath = path.join(temporaryDirectory, "candidate.tar");
   try {
