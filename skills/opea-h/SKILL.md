@@ -44,7 +44,7 @@ Human Reviewer: approve/reject/request change where required and remain outside 
 
 ## Receipts and continuity
 
-Every delegated phase run has a new run ID/receipt even when a session-scoped role thread is reused.
+Every delegated phase run has a new run ID and receipt ID. The Core `project-runtime` lifecycle requires the same AgentInstance to reuse its binding/thread throughout the root session. Executor and Auditor remain independent AgentInstances/threads; a second Auditor run reuses that Auditor's thread. Consume Core's failure/session-rollover rules rather than implementing another lifecycle.
 
 Persist only durable state/evidence required for continuation. Conversation history and chain-of-thought are not Task state.
 

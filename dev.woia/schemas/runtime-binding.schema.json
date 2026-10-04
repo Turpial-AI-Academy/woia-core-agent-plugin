@@ -50,6 +50,11 @@
         }
       }
     },
+    "root_session_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Observed host root-session identity or an explicit session-start token. Required for current custom-agent execution; legacy bindings without it remain historical only."
+    },
     "materialized_generation": {
       "type": "integer",
       "minimum": 0

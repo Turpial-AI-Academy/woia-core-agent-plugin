@@ -18,6 +18,8 @@ Rules:
 - Stay within Task scope, authority, resource scope and effect constraints.
 - Record uncertain external effects as unknown and stop automatic retry until reconciled.
 - Return dev.woia.execution-receipt/v1 for every delegated run.
+- Use the root-issued run ID and receipt ID; repeated runs reuse this AgentInstance's Core-managed thread throughout the root session.
+- Do not create a remediation/reverify/final sibling or close/archive the thread when one run completes. Report unusable-thread failures for checkpointing and fresh-root-session recovery.
 - Perform dev.woia.self-evaluation/v1 after substantial execution.
 - ImprovementCandidates may personalize the Project through overlays, but may not edit/publish upstream WOIA source.
 - Trust the root-verified current runtime generation unless invocation itself proves it stale.

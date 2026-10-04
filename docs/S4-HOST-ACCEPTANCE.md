@@ -11,7 +11,7 @@ These scenarios are intentionally deferred until a supported ChatGPT/Codex host 
 3. Run Core Project bootstrap once, then resume the same Project in a fresh host session.
 4. Verify one managed WOIA block exists, unrelated instructions remain, `.woia/project.json` keeps the same Project identity, and existing provider/custom-agent/runtime state is reconciled rather than reset.
 
-Expected: persistent binding survives host restart without duplicating the managed block or conversational state becoming authoritative.
+Expected: the Project operating contract and durable logical state survive host restart without duplicating the managed block or making conversational state authoritative. Native runtime bindings are session-local and must be replaced lazily in the new root session.
 
 ## 2. Runtime generation boundary
 
@@ -43,3 +43,11 @@ Expected: no duplicate side effect is attempted while prior effect state is unkn
 ## 5. Proportional OPEA-H
 
 Exercise one case for each profile: direct-service, task-execution, planned-execution, audited-execution, and opea-h-full. Verify only justified phases are materialized and Software is not wrapped in redundant OPEA-H.
+
+## 6. Native custom-agent continuity
+
+Use the immutable component graph recorded by the latest Programme production handoff. In S1 execute one AgentInstance three times: observe one binding/thread and three distinct run IDs/receipt IDs. Run an independent Auditor twice: its thread differs from Executor's and is reused for both audits. Repeat with Software Development refinement, then independent Code Review/Testing (Security/Release QA when applicable).
+
+Close S1 and reopen the same Project in S2. Preserve Project/Task/AgentInstance identities and checkpoints, retire S1's active references, and observe a fresh binding/thread on first activation with reuse on the second S2 run. A generation mismatch must still block provider execution on a reused thread.
+
+If safely observable, make the singleton unusable or observe host capacity failure: require a persisted blocker/checkpoint/continuation and a fresh root session, with no sibling creation. If the host cannot safely induce this case, report `NOT_RUN_HOST_LIMITATION` with its concrete reason. Do not infer native behavior from `tests/thread-continuity.test.mjs`; those tests prove the source contract only.

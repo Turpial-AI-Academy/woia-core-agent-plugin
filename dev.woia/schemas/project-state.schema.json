@@ -19,7 +19,8 @@
       "const": "dev.woia.core-project-state/v1"
     },
     "core_version": {
-      "const": "0.5.0"
+      "type": "string",
+      "pattern": "^0\\.5\\.(0|[1-9][0-9]*)$"
     },
     "project": {
       "type": "object",

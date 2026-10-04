@@ -17,6 +17,10 @@ This Project is managed with WOIA. The ChatGPT/Codex root agent remains the sess
 12. Global-plugin improvements become upstream feedback only; consumers never edit/publish canonical WOIA source.
 13. Tool/plugin access does not grant business authority.
 14. Ask the human only at genuine install/access/approval/effect/runtime boundaries.
+15. Reuse the same binding and native custom-agent thread for the same AgentInstance throughout the active root session. A new delegated run creates a new run ID and receipt ID, not a new thread.
+16. Independent AgentInstances use independent threads, including when they share an AgentDefinition. Do not create remediation/reverify/final sibling threads for an existing AgentInstance.
+17. If a thread is unusable, lost, rejected or capacity-blocked, persist its blocker/checkpoint/continuation and recover in a fresh root session; never spawn a same-session replacement. Completing a run does not close or archive its thread.
+18. Recover durable Project/Task/AgentInstance state across root sessions, but create a new binding/thread lazily in the new session. An old-session thread is never current. Reuse never bypasses the loaded/materialized generation gate.
 
-The root may maintain .woia/**, this managed block, and WOIA-owned harness projection/config files while preserving unrelated instructions.
+The root may maintain .woia/**, this Project-root managed block, and WOIA-owned harness projection/config files while preserving unrelated instructions. Account/global instructions are host-owned. Existing nested Project instruction files remain untouched and are not WOIA state.
 <!-- WOIA_PROJECT_OPERATING_CONTRACT:END -->

@@ -96,6 +96,7 @@
       }
     },
     "active_binding_ref": {
+      "description": "Only the usable binding for this AgentInstance in the active root session and loaded runtime generation. Clear on session rollover or thread failure; historical bindings are not current.",
       "anyOf": [
         {
           "$ref": "./common.schema.json#/$defs/ref"
