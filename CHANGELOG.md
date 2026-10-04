@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+**Unreleased main maintenance**
 
 - Remove unconsumed private authoring exports while preserving Core runtime and public contracts.
 - Align maintenance documentation with the container-engine-neutral local parity contract.
