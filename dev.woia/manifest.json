@@ -1,6 +1,6 @@
 {
   "schema": "dev.woia.core-manifest/v1",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "skills": [
     "project-runtime",
     "opea-h",
@@ -42,6 +42,11 @@
     "extraction_policy": "carry-forward-invariants-not-monolith-runtime"
   },
   "deterministic_tools": [
+    {
+      "id": "agent.thread.lifecycle",
+      "path": "skills/project-runtime/scripts/agent-thread-lifecycle.mjs",
+      "purpose": "Reserve and reuse one native thread per AgentInstance and root session, issue independent runs/receipts, and checkpoint failures before fresh-session recovery."
+    },
     {
       "id": "project.bootstrap",
       "path": "skills/project-runtime/scripts/bootstrap-project.mjs",

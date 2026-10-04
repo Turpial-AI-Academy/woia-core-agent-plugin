@@ -1,7 +1,9 @@
 # Changelog
 
-**Unreleased main maintenance**
+## 0.5.1 - 2026-10-04
 
+- Enforce one native custom-agent thread per AgentInstance and root session, with independent run and receipt identities.
+- Persist failure checkpoints, recover interrupted runtime state without sibling threads, and preserve generation and Project instruction boundaries.
 - Remove unconsumed private authoring exports while preserving Core runtime and public contracts.
 - Align maintenance documentation with the container-engine-neutral local parity contract.
 

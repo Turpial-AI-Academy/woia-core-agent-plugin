@@ -11,6 +11,7 @@ It is deliberately **not** a department methodology and not a central backend. D
 - durable Task and TaskCell state;
 - proportional OPEA-H profiles for non-software persistent work;
 - AgentDefinition / AgentInstance / HarnessRuntimeBinding separation;
+- one native custom-agent thread per AgentInstance and root session, with new run/receipt identities for each delegation;
 - execution receipts and evidence provenance;
 - effect tracking, including unknown-effect reconciliation before retry;
 - checkpoints, blockers, recovery and resume;

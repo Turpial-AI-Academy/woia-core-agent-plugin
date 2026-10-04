@@ -173,6 +173,17 @@ if (input.fault.kind === "kill-eperm") {
     }
     return original.call(this, pid, signal);
   };
+} else if (input.fault.kind === "exit-before-current-pointer") {
+  const original = fs.promises.rename;
+  const pointer = path.join(input.args.root, ".woia", "runtime", "current-session.json");
+  fs.promises.rename = async function(from, to) {
+    if (path.resolve(String(to)) === pointer) {
+      const session = JSON.parse(await fs.promises.readFile(from, "utf8"));
+      if (session.id === input.args.sessionId) process.exit(91);
+    }
+    return original.call(this, from, to);
+  };
+  syncBuiltinESMExports();
 } else {
   const original = fs.promises.writeFile;
   const target = path.join(input.args.root, ".woia", ...input.fault.target);
@@ -921,4 +932,57 @@ test("an Executor run cannot be completed by an Auditor receipt and freezes its 
   assert.equal(next.run.role, "auditor");
   assert.equal(next.run.thread_id, result.run.thread_id);
   await assertStoredReceipts(root, 2);
+});
+
+test("a real crash after canonical S2 persistence resumes only the root session fixed by the recovery marker", async t => {
+  const { root, task } = await fixture(t);
+  await startSession({ root, sessionId: "S1", loadedGeneration: GENERATION });
+  await activate(root, "S1", "agent-a", "thread-before-pointer-crash");
+  const firstOwner = await holdOperation(root, "failThread", { sessionId: "S1", agentId: "agent-a", reason: "Interrupted original checkpoint" }, { target: ["checkpoints"] });
+  await firstOwner.stop();
+  assert.equal((await recoverAbandonedLock({ root, sessionId: "S2" })).action, "LOCK_RECOVERED");
+  const argv = await faultArguments(root, "startSession", { sessionId: "S2", loadedGeneration: GENERATION }, { kind: "exit-before-current-pointer" });
+  const child = spawn(process.execPath, argv, { windowsHide: true, timeout: 15000, stdio: ["ignore", "pipe", "pipe"] });
+  child.stdout.resume();
+  child.stderr.resume();
+  const exited = await new Promise((resolve, reject) => {
+    child.once("error", reject);
+    child.once("close", (code, signal) => resolve({ code, signal }));
+  });
+  assert.equal(exited.code, 91, "The child must exit inside the selected rename, without running finally cleanup");
+  assert.equal(exited.signal, null);
+  const runtime = path.join(root, ".woia", "runtime");
+  const ownerFile = path.join(runtime, "lifecycle.lock", "owner.json");
+  const noticeFile = path.join(runtime, "recovery.json");
+  const pointerFile = path.join(runtime, "current-session.json");
+  assert.equal((await json(ownerFile)).pid, child.pid);
+  assert.equal((await record(root, "runtime/sessions", "S2")).state, "active");
+  assert.equal((await json(pointerFile)).id, "S1");
+  assert.equal((await json(pointerFile)).state, "closed");
+  assert.equal((await json(noticeFile)).new_session_id, "S2");
+  await assert.rejects(() => recoverAbandonedLock({ root, sessionId: "S1" }));
+  await assert.rejects(() => recoverAbandonedLock({ root, sessionId: "S3" }));
+  await assert.rejects(() => startSession({ root, sessionId: "S2", loadedGeneration: GENERATION }));
+  const recovered = await recoverAbandonedLock({ root, sessionId: "S2" });
+  assert.equal(recovered.action, "LOCK_RECOVERED");
+  assert.equal(recovered.session_id, "S2");
+  assert.equal((await json(noticeFile)).owner.pid, child.pid, "Recovery must retain the latest interrupted lock owner");
+  assert.equal((await startSession({ root, sessionId: "S2", loadedGeneration: GENERATION })).action, "SESSION_REUSED");
+  assert.deepEqual(await json(pointerFile), await record(root, "runtime/sessions", "S2"));
+  for (const file of [ownerFile, noticeFile, path.join(runtime, "recovery.lock", "owner.json")]) {
+    await assert.rejects(() => access(file), { code: "ENOENT" });
+  }
+  await assert.rejects(() => recoverAbandonedLock({ root, sessionId: "S2" }));
+  await assert.rejects(() => delegation(root, "S1", "agent-a"));
+  assert.equal((await delegation(root, "S2", "agent-a")).action, "WAIT_FOR_TASK");
+  assert.equal((await records(root, "runtime/sessions")).length, 2);
+  assert.equal((await records(root, "bindings")).length, 1);
+  const checkpoints = await records(root, "checkpoints");
+  assert.equal(checkpoints.length, 1);
+  valid("checkpoint", checkpoints[0]);
+  const recoveredTask = await record(root, "tasks", task.id);
+  valid("task", recoveredTask);
+  assert.equal(recoveredTask.state, "blocked");
+  assert.equal(recoveredTask.blockers.length, 1);
+  assert.deepEqual(recoveredTask.current_checkpoint_ref, ref("Checkpoint", checkpoints[0].id));
 });
