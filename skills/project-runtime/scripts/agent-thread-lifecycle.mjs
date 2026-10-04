@@ -91,8 +91,10 @@ export async function recoverAbandonedLock({ root, sessionId = id("session") }) 
   const session = await sessionState(root);
   const existingNotice = await maybeJson(path.join(runtime, "recovery.json"));
   if (existingNotice) assert(existingNotice.new_session_id === sessionId, "Continue recovery with its already recorded new root-session identity");
-  assert(typeof sessionId === "string" && sessionId.trim() && sessionId !== session?.id
-    && !await maybeJson(recordPath(root, "runtime/sessions", sessionId)), "Lock recovery requires a new real root-session identity");
+  const known = await maybeJson(recordPath(root, "runtime/sessions", sessionId));
+  assert(typeof sessionId === "string" && sessionId.trim() && (existingNotice
+    ? !known || known.state === "active"
+    : sessionId !== session?.id && !known), "Lock recovery requires a new real root-session identity or its recorded incomplete recovery");
   // Recovery is explicitly requested, never a timeout-based takeover of a live operation.
   const recoveryPath = path.join(runtime, "recovery.lock");
   const abandonedRecovery = await maybeJson(path.join(recoveryPath, "owner.json"));
@@ -109,7 +111,7 @@ export async function recoverAbandonedLock({ root, sessionId = id("session") }) 
     const lock = path.join(runtime, "lifecycle.lock");
     const owner = await maybeJson(path.join(lock, "owner.json")) ?? existingNotice?.owner;
     assertDeadOwner(owner);
-    const notice = existingNotice ?? { old_session_id: session?.id ?? null, new_session_id: sessionId, reason: `Interrupted lifecycle operation owned by exited process ${owner.pid}`, owner };
+    const notice = existingNotice ? { ...existingNotice, owner } : { old_session_id: session?.id ?? null, new_session_id: sessionId, reason: `Interrupted lifecycle operation owned by exited process ${owner.pid}`, owner };
     await save(path.join(runtime, "recovery.json"), notice);
     const observed = await maybeJson(path.join(lock, "owner.json"));
     if (observed) {
