@@ -97,7 +97,7 @@ async function createFixture(t, options = {}) {
     else await writeFile(target, content, "utf8");
   }
   await generateChecksums(root);
-  return { root, files };
+  return { root };
 }
 
 function commitFixture(root) {

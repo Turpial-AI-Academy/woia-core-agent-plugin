@@ -36,6 +36,7 @@ Docker parity uses a read-only source mount, a fresh Linux workspace, an exact p
 ## Portable payload changes
 
 ~~~text
+# optional source diagnostic; not a release gate
 pnpm run checksums:generate
 mise run ci:fast
 ~~~

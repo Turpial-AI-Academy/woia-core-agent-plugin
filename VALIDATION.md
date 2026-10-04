@@ -10,21 +10,8 @@ Under the simplified archive-integrity contract, `CHECKSUMS.sha256` is not a req
 
 Managed clean-Linux parity is container-engine neutral. `docker` is the default CLI for compatibility; set `WOIA_CONTAINER_ENGINE=podman` (or another Docker-compatible local OCI CLI) to use a zero-cost alternative. Hosted or paid container services are not mandatory.
 
-Before first release:
-
-~~~text
-# after README.plugin.md -> README.md and placeholder replacement
-mise install
-mise run bootstrap
-mise run doctor
-mise run validate
-mise run test
-mise run ci:fast
-mise run ci:extended
-mise run jobs:local
-# commit candidate
-mise run release:check
-~~~
+For repository setup and local gates, follow [Repository maintenance](docs/MAINTENANCE.md).
+For exact-candidate certification and publication, follow [Release](docs/RELEASE.md).
 
 Also run `skills-ref validate` for each skill when available.
 

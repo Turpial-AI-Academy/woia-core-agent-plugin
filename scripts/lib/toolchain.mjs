@@ -4,7 +4,7 @@ import { parse as parseToml } from "smol-toml";
 import { parseDocument } from "yaml";
 import { ROOT as REPO_ROOT, canonicalToolchain, assertRuntimeVersions } from "./toolchain-contract.mjs";
 
-export const ROOT = REPO_ROOT;
+const ROOT = REPO_ROOT;
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
