@@ -59,6 +59,8 @@ Track publication, discoverability, installation, enablement, and runtime load i
 
 Authorization binds to the exact plugin/marketplace/selector/responsibility set. If that set changes, invalidate the earlier authorization rather than widening it silently.
 
+Before any provider-owned mutation/effect, prove a matching authority grant for the exact capability, operation, and effect class. Technical access is not authority. For local file persistence, the grant must include `local-write`; absence of a matching grant is a blocker and the provider must produce zero mutation. The bundled `scripts/authority-guard.mjs` provides the minimum fail-closed grant check; it does not waive separate denial, approval, or human-boundary rules.
+
 ## Runtime generations
 
 Plugin enablement or custom-role materialization increments the materialized generation. Provider-owned work is executable only when loaded_generation equals materialized_generation and required provider skills/roles resolve.
