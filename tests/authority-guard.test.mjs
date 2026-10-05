@@ -5,20 +5,26 @@ import path from "node:path";
 import test from "node:test";
 import { findEffectGrant, requireEffectGrant } from "../skills/project-runtime/scripts/authority-guard.mjs";
 
-function context(grants = []) {
+const taskRef={ type: "Task", id: "task-1" };
+
+function context(grants = [], overrides = {}) {
   return {
     schema: "dev.woia.authority-context/v1",
     id: "authority-business-rules",
     revision: 1,
     principal: { kind: "agent-instance", id: "agent-business-rules" },
     department: "software",
-    task_ref: { type: "Task", id: "task-1" },
+    task_ref: taskRef,
     grants,
     denials: [],
+    ...overrides,
   };
 }
 
 const request = {
+  principalId: "agent-business-rules",
+  department: "software",
+  taskRef,
   capability: "business-rules",
   operation: "persist-artifact",
   effectClass: "local-write",
@@ -63,4 +69,12 @@ test("authority guard executes before mutation: denied request writes zero bytes
 test("grant guard is minimum authority proof and does not infer a grant from technical access", () => {
   assert.equal(findEffectGrant(null, request), null);
   assert.equal(findEffectGrant({ schema: "dev.woia.authority-context/v1", grants: [] }, request), null);
+});
+
+test("principal task department and unresolved denials fail closed", () => {
+  const grant = { capability: "business-rules", operations: ["persist-artifact"], effect_classes: ["local-write"] };
+  assert.equal(findEffectGrant(context([grant], { principal: { kind: "agent-instance", id: "other-agent" } }), request), null);
+  assert.equal(findEffectGrant(context([grant], { department: "marketing" }), request), null);
+  assert.equal(findEffectGrant(context([grant], { task_ref: { type: "Task", id: "other-task" } }), request), null);
+  assert.equal(findEffectGrant(context([grant], { denials: ["unreconciled policy denial"] }), request), null);
 });
