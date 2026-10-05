@@ -1,7 +1,7 @@
 {
   "name": "woia-core-agent-plugin-repo",
   "private": true,
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Repository maintenance tooling for the WOIA Core portable Agent Plugin.",
   "type": "module",
   "engines": {
