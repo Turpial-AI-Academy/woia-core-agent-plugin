@@ -8,6 +8,7 @@ It is deliberately **not** a department methodology and not a central backend. D
 
 - one-invocation Project bootstrap and persistent root-agent binding;
 - provider discovery/install/update/enablement/runtime-load lifecycle;
+- fail-closed authority grants for provider-owned mutations, including explicit `local-write` before file persistence;
 - durable Task and TaskCell state;
 - proportional OPEA-H profiles for non-software persistent work;
 - AgentDefinition / AgentInstance / HarnessRuntimeBinding separation;
