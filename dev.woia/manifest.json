@@ -1,6 +1,6 @@
 {
   "schema": "dev.woia.core-manifest/v1",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "skills": [
     "project-runtime",
     "opea-h",
@@ -46,6 +46,11 @@
       "id": "agent.thread.lifecycle",
       "path": "skills/project-runtime/scripts/agent-thread-lifecycle.mjs",
       "purpose": "Reserve and reuse one native thread per AgentInstance and root session, issue independent runs/receipts, and checkpoint failures before fresh-session recovery."
+    },
+    {
+      "id": "authority.guard.require",
+      "path": "skills/project-runtime/scripts/authority-guard.mjs",
+      "purpose": "Fail closed unless an AgentInstance has an exact capability/operation/effect-class authority grant before a provider-owned mutation."
     },
     {
       "id": "project.bootstrap",
