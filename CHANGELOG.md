@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.5.2 - 2026-10-05
 
 - Add a generic fail-closed authority grant guard and prove Business Rules local-write cannot mutate without an exact grant.
 
