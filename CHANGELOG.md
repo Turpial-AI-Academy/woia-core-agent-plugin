@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add a generic fail-closed authority grant guard and prove Business Rules local-write cannot mutate without an exact grant.
+
 ## 0.5.1 - 2026-10-04
 
 - Enforce one native custom-agent thread per AgentInstance and root session, with independent run and receipt identities.
