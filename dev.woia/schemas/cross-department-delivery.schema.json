@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://woia.dev/schemas/core/v0.5.0/cross-department-delivery.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema","id","revision","organization_ref","request_ref","request_id","correlation_id","origin","target","request_digest","state","attempt","fence","claim","activation","receiver_task_ref","response_ref","blockers","created_at","updated_at"],
+  "properties": {
+    "schema":{"const":"dev.woia.cross-department-delivery/v1"},
+    "id":{"$ref":"./common.schema.json#/$defs/id"},
+    "revision":{"type":"integer","minimum":1},
+    "organization_ref":{"type":"string","minLength":1},
+    "request_ref":{"$ref":"./common.schema.json#/$defs/resourceRef"},
+    "request_id":{"$ref":"./common.schema.json#/$defs/id"},
+    "correlation_id":{"$ref":"./common.schema.json#/$defs/id"},
+    "origin":{
+      "type":"object","additionalProperties":false,"required":["department","project_ref","task_ref"],
+      "properties":{
+        "department":{"$ref":"./common.schema.json#/$defs/id"},
+        "project_ref":{"type":"string","minLength":1},
+        "task_ref":{"$ref":"./common.schema.json#/$defs/ref"}
+      }
+    },
+    "target":{
+      "type":"object","additionalProperties":false,"required":["department","project_ref"],
+      "properties":{
+        "department":{"$ref":"./common.schema.json#/$defs/id"},
+        "project_ref":{"type":"string","minLength":1}
+      }
+    },
+    "request_digest":{"$ref":"./common.schema.json#/$defs/sha256"},
+    "state":{"enum":["queued","claimed","submitted","transport-unknown","delivered","activated","accepted","result-returned","completed","blocked","rejected"]},
+    "attempt":{"type":"integer","minimum":0},
+    "fence":{"type":"integer","minimum":0},
+    "claim":{
+      "anyOf":[
+        {"type":"null"},
+        {
+          "type":"object","additionalProperties":false,
+          "required":["token","worker_id","fence","claimed_at","expires_at"],
+          "properties":{
+            "token":{"type":"string","minLength":1},
+            "worker_id":{"type":"string","minLength":1},
+            "fence":{"type":"integer","minimum":1},
+            "claimed_at":{"$ref":"./common.schema.json#/$defs/datetime"},
+            "expires_at":{"$ref":"./common.schema.json#/$defs/datetime"}
+          }
+        }
+      ]
+    },
+    "transport_ref":{"anyOf":[{"$ref":"./common.schema.json#/$defs/resourceRef"},{"type":"null"}]},
+    "activation":{
+      "type":"object","additionalProperties":false,"required":["state","ref"],
+      "properties":{
+        "state":{"enum":["not-requested","requested","active","unavailable"]},
+        "ref":{"anyOf":[{"$ref":"./common.schema.json#/$defs/resourceRef"},{"type":"null"}]}
+      }
+    },
+    "receiver_task_ref":{"anyOf":[{"$ref":"./common.schema.json#/$defs/ref"},{"type":"null"}]},
+    "response_ref":{"anyOf":[{"$ref":"./common.schema.json#/$defs/resourceRef"},{"type":"null"}]},
+    "response_status":{"enum":["accepted","completed","blocked","rejected"]},
+    "blockers":{"type":"array","items":{"$ref":"./common.schema.json#/$defs/blocker"}},
+    "created_at":{"$ref":"./common.schema.json#/$defs/datetime"},
+    "updated_at":{"$ref":"./common.schema.json#/$defs/datetime"}
+  }
+}

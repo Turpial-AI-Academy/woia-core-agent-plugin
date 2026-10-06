@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://woia.dev/schemas/core/v0.5.0/orchestrator-composition-snapshot.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema","id","task_ref","project_ref","department","composition_id","active_root","generic_base","delta","provider_closure","evaluation_evidence","composed_digest","created_at"],
+  "properties": {
+    "schema":{"const":"dev.woia.orchestrator-composition-snapshot/v1"},
+    "id":{"$ref":"./common.schema.json#/$defs/id"},
+    "task_ref":{"$ref":"./common.schema.json#/$defs/ref"},
+    "project_ref":{"type":"string","minLength":1},
+    "department":{"$ref":"./common.schema.json#/$defs/id"},
+    "composition_id":{"$ref":"./common.schema.json#/$defs/id"},
+    "active_root":{
+      "type":"object","additionalProperties":false,"required":["plugin","version","selector"],
+      "properties":{"plugin":{"$ref":"./common.schema.json#/$defs/id"},"version":{"$ref":"./common.schema.json#/$defs/semver"},"selector":{"type":"string","minLength":1}}
+    },
+    "generic_base":{
+      "type":"object","additionalProperties":false,"required":["plugin","version","selector"],
+      "properties":{"plugin":{"$ref":"./common.schema.json#/$defs/id"},"version":{"$ref":"./common.schema.json#/$defs/semver"},"selector":{"type":"string","minLength":1}}
+    },
+    "delta":{
+      "type":"object","additionalProperties":false,"required":["plugin","version","selector"],
+      "properties":{"plugin":{"$ref":"./common.schema.json#/$defs/id"},"version":{"$ref":"./common.schema.json#/$defs/semver"},"selector":{"type":"string","minLength":1}}
+    },
+    "provider_closure":{
+      "type":"array",
+      "items":{
+        "type":"object","additionalProperties":false,"required":["plugin","version","selector"],
+        "properties":{"plugin":{"$ref":"./common.schema.json#/$defs/id"},"version":{"$ref":"./common.schema.json#/$defs/semver"},"selector":{"type":"string","minLength":1}}
+      }
+    },
+    "evaluation_evidence":{"type":"array","minItems":1,"items":{"type":"string","minLength":1}},
+    "organization_profile_revision":{"type":["integer","null"],"minimum":1},
+    "department_profile_revision":{"type":["integer","null"],"minimum":1},
+    "composed_digest":{"$ref":"./common.schema.json#/$defs/sha256"},
+    "created_at":{"$ref":"./common.schema.json#/$defs/datetime"}
+  }
+}

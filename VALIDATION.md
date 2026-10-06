@@ -16,3 +16,8 @@ For exact-candidate certification and publication, follow [Release](docs/RELEASE
 Also run `skills-ref validate` for each skill when available.
 
 No placeholder token or scaffold-only `README.plugin.md` may remain in the release candidate.
+
+
+## B4 global-contract regressions
+
+Run `node --test tests/b4-global-runtime.test.mjs` (also included by `pnpm test` / `ci:fast`). The regression must prove fenced Due Work, no blind retry after unknown transport, receiver-owned Task acceptance, purpose-scoped resource resolution, and fail-closed exact base/delta/provider-closure composition. Schema validation must include the five B4 linked schemas through the Core manifest. Real host transport/activation and production durable-store behavior remain later integration/operator evidence; unit regressions must not be relabeled as host E2E.

@@ -65,3 +65,7 @@ Self-evaluation distinguishes what worked, what failed, remaining risks, concret
 ## Promotion boundary
 
 No custom agent may commit to upstream WOIA repositories, tag/publish a plugin release, update the global registry/marketplaces, or globally promote its own candidate.
+
+## Independent orchestrator composition snapshots
+
+For a department with an independently released vertical delta, use `create-orchestrator-composition-snapshot.mjs` in addition to ordinary capability snapshots. The input declaration must come from an admitted/validated Ecosystem specialization contract, have status `qualified`, and contain a passed exact-pair evaluation. The helper fails closed on an out-of-range base, unevaluated pair or mismatched provider closure. Preserve prior Task snapshots; never rewrite a snapshot to adopt a newer base/delta pair.

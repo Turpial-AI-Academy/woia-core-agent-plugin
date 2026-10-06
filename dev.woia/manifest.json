@@ -26,7 +26,12 @@
     "organization-registry",
     "authority-context",
     "shared-resource-reference",
-    "cross-department-message"
+    "cross-department-message",
+    "due-work",
+    "cross-department-delivery",
+    "organization-resource-binding-set",
+    "project-resource-resolution",
+    "orchestrator-composition-snapshot"
   ],
   "workflow_profiles": [
     "direct-service",
@@ -66,6 +71,26 @@
       "id": "capability.snapshot.create",
       "path": "skills/project-improvement/scripts/create-capability-snapshot.mjs",
       "purpose": "Create a deterministic effective-capability pin/digest for a Task."
+    },
+    {
+      "id": "due-work.transition",
+      "path": "skills/project-runtime/scripts/due-work-state.mjs",
+      "purpose": "Apply fenced Due Work claim, retry, block, resume and completion transitions without granting business authority."
+    },
+    {
+      "id": "cross-department.delivery.transition",
+      "path": "skills/project-runtime/scripts/cross-department-delivery-state.mjs",
+      "purpose": "Track durable request delivery, unknown transport, receiver activation, acceptance, correlated result and recovery as distinct states."
+    },
+    {
+      "id": "project.resources.resolve",
+      "path": "skills/project-runtime/scripts/resolve-project-resources.mjs",
+      "purpose": "Resolve minimum organization-owned versioned resources for one Project department and purpose without copying secrets or unrelated organization data."
+    },
+    {
+      "id": "orchestrator.composition.snapshot.create",
+      "path": "skills/project-improvement/scripts/create-orchestrator-composition-snapshot.mjs",
+      "purpose": "Pin an exact independently released generic-base plus delta pair and evaluated provider closure for in-flight Task reproducibility."
     }
   ]
 }

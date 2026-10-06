@@ -18,7 +18,11 @@ It is deliberately **not** a department methodology and not a central backend. D
 - checkpoints, blockers, recovery and resume;
 - self-evaluation and ImprovementCandidate generation;
 - immutable-base Project overlays;
-- effective capability snapshots for in-flight Task reproducibility.
+- effective capability snapshots for in-flight Task reproducibility;
+- fenced Due Work semantics and deterministic transitions;
+- durable cross-department delivery/activation/result/recovery semantics;
+- organization-resource binding resolution without Project-local data masters;
+- exact independently released orchestrator base+delta composition snapshots.
 
 ## What Core does not own
 
@@ -27,7 +31,7 @@ It is deliberately **not** a department methodology and not a central backend. D
 - provider capability implementation;
 - organizational CRM/ERP/database records;
 - source publication or marketplace governance;
-- cross-department transport/data contracts (added by the organization-plane work).
+- the physical queue/worker, host transport implementation, business/domain database, or external organization systems; Core supplies the contracts and transition semantics, while selected adapters/infrastructure operate them.
 
 ## Consumer state
 
@@ -59,3 +63,8 @@ The Project stores operational state and references. It is not a copy of organiz
 ## Core invariant
 
 > Base plugins are immutable to consumers; project personalization is separate state; in-flight Tasks pin the effective capability they started with.
+
+
+## B4 compatibility layer
+
+The v0.5.2 source now carries compatible linked v1 contracts for Due Work, autonomous delivery, organization-resource resolution and independent orchestrator specialization snapshots. Existing closed schemas remain readable and unchanged. This source change is not itself a published release or proof of a real host/worker; exact release/admission and operator-host qualification remain separate gates.

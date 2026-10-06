@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://woia.dev/schemas/core/v0.5.0/project-resource-resolution.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema","id","project_ref","organization_ref","organization_binding_id","organization_revision","department","purpose","resources","composed_digest","resolved_at"],
+  "properties": {
+    "schema":{"const":"dev.woia.project-resource-resolution/v1"},
+    "id":{"$ref":"./common.schema.json#/$defs/id"},
+    "project_ref":{"type":"string","minLength":1},
+    "organization_ref":{"type":"string","minLength":1},
+    "organization_binding_id":{"$ref":"./common.schema.json#/$defs/id"},
+    "organization_revision":{"type":"integer","minimum":1},
+    "department":{"$ref":"./common.schema.json#/$defs/id"},
+    "purpose":{"type":"string","minLength":1},
+    "resources":{
+      "type":"array",
+      "items":{
+        "type":"object","additionalProperties":false,
+        "required":["binding_id","resource_type","capability_plugin","system_of_record","classification","contract","binding_ref","operations","minimum_fields"],
+        "properties":{
+          "binding_id":{"$ref":"./common.schema.json#/$defs/id"},
+          "resource_type":{"type":"string","minLength":1},
+          "capability_plugin":{"$ref":"./common.schema.json#/$defs/id"},
+          "system_of_record":{"type":"string","minLength":1},
+          "classification":{"enum":["public","internal","confidential","restricted"]},
+          "contract":{"type":"object","additionalProperties":false,"required":["id","version"],"properties":{"id":{"type":"string","minLength":1},"version":{"type":"string","minLength":1},"digest":{"anyOf":[{"$ref":"./common.schema.json#/$defs/sha256"},{"type":"null"}]}}},
+          "binding_ref":{"type":"string","minLength":1},
+          "source_authority_map_ref":{"anyOf":[{"$ref":"./common.schema.json#/$defs/resourceRef"},{"type":"null"}]},
+          "operations":{"type":"array","minItems":1,"items":{"type":"string","minLength":1}},
+          "minimum_fields":{"type":"array","items":{"type":"string","minLength":1}}
+        }
+      }
+    },
+    "composed_digest":{"$ref":"./common.schema.json#/$defs/sha256"},
+    "resolved_at":{"$ref":"./common.schema.json#/$defs/datetime"}
+  }
+}
