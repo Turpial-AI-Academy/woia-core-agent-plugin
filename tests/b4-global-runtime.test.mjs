@@ -27,6 +27,7 @@ test("Due Work uses dedupe identity and fencing so stale workers cannot complete
   assert.throws(()=>completeDueWork(d,{token:"bad",fence:fenceA,now:t2}),/stale/);
   d=releaseDueWork(d,{token:"claim:a",fence:fenceA,now:t2,blocker:{id:"source-down",type:"source",summary:"Provider unavailable"}});
   assert.equal(d.state,"blocked");
+  assert.equal(d.task_ref.id,"task:pm");
   d=resumeDueWork(d,{now:t2,dueAt:t3});
   d=claimDueWork(d,{workerId:"worker:b",token:"claim:b",now:t3,expiresAt:"2026-10-06T12:10:00Z"});
   assert.ok(d.fence>fenceA);
@@ -76,7 +77,8 @@ test("unknown delivery may be retried only after proven not delivered, and activ
   d=markActivationUnavailable(d,{now:"2026-10-06T12:06:00Z",blocker:{id:"receiver-offline",type:"activation",summary:"Host activation unavailable"}});
   assert.equal(d.state,"blocked");
   d=recoverBlockedDelivery(d,{now:"2026-10-06T12:07:00Z"});
-  assert.equal(d.state,"queued");
+  assert.equal(d.state,"delivered");
+  assert.equal(d.transport_ref.id,"a2");
 });
 
 test("Project resource resolution filters by organization-scoped department purpose and emits stable digest",()=>{
@@ -102,13 +104,14 @@ test("Project resource resolution filters by organization-scoped department purp
       }
     ]
   };
-  const a=resolveProjectResources({bindingSet,projectRef:"project:data",department:"data",purpose:"governance",resolvedAt:t1});
-  const b=resolveProjectResources({bindingSet,projectRef:"project:data",department:"data",purpose:"governance",resolvedAt:t1});
+  const a=resolveProjectResources({bindingSet,organizationRef:"org:agency",projectRef:"project:data",department:"data",purpose:"governance",resolvedAt:t1});
+  const b=resolveProjectResources({bindingSet,organizationRef:"org:agency",projectRef:"project:data",department:"data",purpose:"governance",resolvedAt:t1});
   assert.equal(a.composed_digest,b.composed_digest);
   assert.deepEqual(a.resources.map(x=>x.binding_id),["finance-source-map","real-estate-contract"]);
-  const sales=resolveProjectResources({bindingSet,projectRef:"project:sales",department:"sales",purpose:"commercial",resolvedAt:t1});
+  const sales=resolveProjectResources({bindingSet,organizationRef:"org:agency",projectRef:"project:sales",department:"sales",purpose:"commercial",resolvedAt:t1});
   assert.deepEqual(sales.resources.map(x=>x.binding_id),["real-estate-contract"]);
   assert.equal(JSON.stringify(sales).includes("finance-source-map"),false);
+  assert.throws(()=>resolveProjectResources({bindingSet,organizationRef:"org:other",projectRef:"project:data",department:"data",purpose:"governance",resolvedAt:t1}),/does not match requested organization/);
 });
 
 test("orchestrator specialization activates only an evaluated exact base/delta/provider closure",()=>{

@@ -9,10 +9,11 @@ function inRange(v,r){return cmp(v,r.min_inclusive)>=0&&cmp(v,r.max_exclusive)<0
 function canonical(value){if(Array.isArray(value))return "["+value.map(canonical).join(",")+"]";if(value&&typeof value==="object")return "{"+Object.keys(value).sort().map(k=>JSON.stringify(k)+":"+canonical(value[k])).join(",")+"}";return JSON.stringify(value);}
 async function readMaybe(file){try{return await readFile(file,"utf8")}catch(e){if(e.code==="ENOENT")return null;throw e;}}
 async function atomicWrite(file,content){await mkdir(path.dirname(file),{recursive:true});const temp=file+".tmp-"+process.pid+"-"+Date.now();await writeFile(temp,content,"utf8");await rename(temp,file);}
-function normalizeProviders(items){const out=items.map(x=>({plugin:x.plugin,version:x.version,selector:x.selector}));const seen=new Set();for(const p of out){parse(p.version);const k=p.plugin+"@"+p.version;if(seen.has(k))fail("duplicate provider closure entry: "+k);seen.add(k);}return out.sort((a,b)=>a.plugin.localeCompare(b.plugin)||a.version.localeCompare(b.version));}
+function normalizeProviders(items){const out=items.map(x=>({plugin:x.plugin,version:x.version,selector:x.selector}));const seen=new Set();for(const p of out){if(!p.plugin||!p.selector)fail("provider plugin and selector are required");parse(p.version);const k=p.plugin+"@"+p.version;if(seen.has(k))fail("duplicate provider closure entry: "+k);seen.add(k);}return out.sort((a,b)=>a.plugin.localeCompare(b.plugin)||a.version.localeCompare(b.version));}
 export function createOrchestratorCompositionSnapshot({declaration,taskRef,projectRef,baseVersion,baseSelector,deltaVersion,deltaSelector,providers=[],organizationRevision=null,departmentRevision=null,createdAt}){
   if(declaration?.schema!=="dev.woia.orchestrator-specialization/v1")fail("unsupported specialization declaration");
   if(declaration.status!=="qualified")fail("composition declaration is not qualified");
+  if(!declaration.generic_base?.plugin||!declaration.delta?.plugin||declaration.generic_base.plugin===declaration.delta.plugin)fail("composition base/delta identity is invalid");
   if(!inRange(baseVersion,declaration.generic_base.version_range))fail("base version outside compatible range");
   parse(deltaVersion);
   const normalized=normalizeProviders(providers);

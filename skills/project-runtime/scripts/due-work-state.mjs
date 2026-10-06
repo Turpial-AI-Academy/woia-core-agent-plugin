@@ -23,7 +23,7 @@ export function claimDueWork(record,{workerId,token,now,expiresAt}){
 export function releaseDueWork(record,{token,fence,now,nextDueAt=null,blocker=null}){
   const next=copy(record);requireClaim(next,{token,fence});iso(now,"now");
   if(nextDueAt)iso(nextDueAt,"nextDueAt");
-  next.claim=null;next.task_ref=null;
+  next.claim=null;
   if(blocker){next.state="blocked";next.blockers=[copy(blocker)];}
   else{next.state="pending";next.blockers=[];if(nextDueAt)next.due_at=nextDueAt;}
   next.revision+=1;next.updated_at=now;return next;
