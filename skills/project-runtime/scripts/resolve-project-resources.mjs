@@ -4,14 +4,18 @@ import path from "node:path";
 function fail(message){throw new Error(message);}
 function canonical(value){if(Array.isArray(value))return "["+value.map(canonical).join(",")+"]";if(value&&typeof value==="object")return "{"+Object.keys(value).sort().map(k=>JSON.stringify(k)+":"+canonical(value[k])).join(",")+"}";return JSON.stringify(value);}
 async function atomicWrite(file,content){await mkdir(path.dirname(file),{recursive:true});const temp=file+".tmp-"+process.pid+"-"+Date.now();await writeFile(temp,content,"utf8");await rename(temp,file);}
-function active(binding,at){const t=Date.parse(at);if(binding.effective_from&&Date.parse(binding.effective_from)>t)return false;if(binding.effective_until&&Date.parse(binding.effective_until)<=t)return false;return true;}
+function instant(value,label){if(value===null||value===undefined)return null;const t=Date.parse(value);if(!Number.isFinite(t))fail(label+" must be ISO date-time");return t;}
+function active(binding,at){const t=instant(at,"resolvedAt");const from=instant(binding.effective_from,`${binding.id}.effective_from`);const until=instant(binding.effective_until,`${binding.id}.effective_until`);if(from!==null&&until!==null&&from>=until)fail(`${binding.id}: effective interval must be non-empty`);if(from!==null&&from>t)return false;if(until!==null&&until<=t)return false;return true;}
 export function resolveProjectResources({bindingSet,organizationRef,projectRef,department,purpose,resolvedAt}){
   if(bindingSet?.schema!=="dev.woia.organization-resource-binding-set/v1")fail("unsupported organization resource binding schema");
   if(!organizationRef||!projectRef||!department||!purpose)fail("organizationRef, projectRef, department and purpose are required");
   if(bindingSet.organization_ref!==organizationRef)fail("organization resource binding does not match requested organization");
   if(!Number.isFinite(Date.parse(resolvedAt)))fail("resolvedAt must be ISO date-time");
-  const resources=[];
+  const resources=[];const seenBindingIds=new Set();
   for(const binding of bindingSet.bindings??[]){
+    if(!binding?.id)fail("organization resource binding id is required");
+    if(seenBindingIds.has(binding.id))fail(`duplicate organization resource binding id: ${binding.id}`);
+    seenBindingIds.add(binding.id);
     if(!active(binding,resolvedAt))continue;
     const entries=(binding.access??[]).filter(a=>a.department===department&&a.purposes.includes(purpose));
     if(!entries.length)continue;

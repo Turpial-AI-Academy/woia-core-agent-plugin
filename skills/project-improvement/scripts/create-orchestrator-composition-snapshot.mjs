@@ -10,22 +10,30 @@ function canonical(value){if(Array.isArray(value))return "["+value.map(canonical
 async function readMaybe(file){try{return await readFile(file,"utf8")}catch(e){if(e.code==="ENOENT")return null;throw e;}}
 async function atomicWrite(file,content){await mkdir(path.dirname(file),{recursive:true});const temp=file+".tmp-"+process.pid+"-"+Date.now();await writeFile(temp,content,"utf8");await rename(temp,file);}
 function normalizeProviders(items){const out=items.map(x=>({plugin:x.plugin,version:x.version,selector:x.selector}));const seen=new Set();for(const p of out){if(!p.plugin||!p.selector)fail("provider plugin and selector are required");parse(p.version);const k=p.plugin+"@"+p.version;if(seen.has(k))fail("duplicate provider closure entry: "+k);seen.add(k);}return out.sort((a,b)=>a.plugin.localeCompare(b.plugin)||a.version.localeCompare(b.version));}
-export function createOrchestratorCompositionSnapshot({declaration,taskRef,projectRef,baseVersion,baseSelector,deltaVersion,deltaSelector,providers=[],organizationRevision=null,departmentRevision=null,createdAt}){
+export function createOrchestratorCompositionSnapshot({declaration,taskRef,projectRef,department,baseVersion,baseSelector,deltaVersion,deltaSelector,providers=[],organizationRevision=null,departmentRevision=null,createdAt}){
   if(declaration?.schema!=="dev.woia.orchestrator-specialization/v1")fail("unsupported specialization declaration");
   if(declaration.status!=="qualified")fail("composition declaration is not qualified");
   if(!declaration.generic_base?.plugin||!declaration.delta?.plugin||declaration.generic_base.plugin===declaration.delta.plugin)fail("composition base/delta identity is invalid");
+  if(!department||declaration.department!==department)fail("composition declaration does not match requested department");
+  const allowed=[...(declaration.allowed_operations??[])];const slots=[...(declaration.exported_slots??[])];const gates=[...(declaration.required_gates??[])];
+  if(!allowed.length||allowed.some(x=>!["ADD","SPECIALIZE","NARROW"].includes(x))||new Set(allowed).size!==allowed.length)fail("composition allowed operations are invalid");
+  if(!slots.length||new Set(slots).size!==slots.length)fail("composition exported slots are required and unique");
+  if(!gates.length||new Set(gates).size!==gates.length)fail("composition required gates are required and unique");
   if(!inRange(baseVersion,declaration.generic_base.version_range))fail("base version outside compatible range");
   parse(deltaVersion);
   const normalized=normalizeProviders(providers);
   const pair=(declaration.evaluated_pairs??[]).find(p=>p.base_version===baseVersion&&p.delta_version===deltaVersion&&p.status==="passed");
   if(!pair)fail("exact base/delta pair has no passed evaluation");
+  if(!Array.isArray(pair.evidence)||!pair.evidence.length)fail("passed exact pair requires evaluation evidence");
   const expected=(pair.provider_closure??[]).map(x=>x.plugin+"@"+x.version).sort();
   const actual=normalized.map(x=>x.plugin+"@"+x.version).sort();
   if(JSON.stringify(expected)!==JSON.stringify(actual))fail("provider closure does not match evaluated pair");
   if(!taskRef?.kind||!taskRef?.id||!projectRef||!baseSelector||!deltaSelector)fail("missing snapshot identity");
   if(!Number.isFinite(Date.parse(createdAt)))fail("createdAt must be ISO date-time");
+  const declarationDigest="sha256:"+createHash("sha256").update(canonical(declaration)).digest("hex");
   const identity={
-    task_ref:structuredClone(taskRef),project_ref:projectRef,department:declaration.department,composition_id:declaration.id,
+    task_ref:structuredClone(taskRef),project_ref:projectRef,department,composition_id:declaration.id,declaration_digest:declarationDigest,
+    allowed_operations:[...allowed].sort(),exported_slots:[...slots].sort(),required_gates:[...gates].sort(),
     active_root:{plugin:declaration.delta.plugin,version:deltaVersion,selector:deltaSelector},
     generic_base:{plugin:declaration.generic_base.plugin,version:baseVersion,selector:baseSelector},
     delta:{plugin:declaration.delta.plugin,version:deltaVersion,selector:deltaSelector},
