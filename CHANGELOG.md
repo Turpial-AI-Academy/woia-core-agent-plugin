@@ -3,6 +3,7 @@
 ## 0.5.2 - 2026-10-05
 
 - Add a generic fail-closed authority grant guard and prove Business Rules local-write cannot mutate without an exact grant.
+- Bind local-write eligibility to current durable Project, Task, AgentInstance, AuthorityContext and exact scoped resource; provide a portable mandatory CLI with traversal and junction protection.
 
 ## 0.5.1 - 2026-10-04
 

@@ -59,7 +59,17 @@ Track publication, discoverability, installation, enablement, and runtime load i
 
 Authorization binds to the exact plugin/marketplace/selector/responsibility set. If that set changes, invalidate the earlier authorization rather than widening it silently.
 
-Before any provider-owned mutation/effect, prove a matching authority grant for the exact capability, operation, and effect class. Technical access is not authority. For local file persistence, the grant must include `local-write`; absence of a matching grant is a blocker and the provider must produce zero mutation. The bundled `scripts/authority-guard.mjs` provides the minimum fail-closed grant check; it does not waive separate denial, approval, or human-boundary rules.
+Before any provider-owned mutation/effect, prove a matching authority grant for the exact capability, operation, and effect class. Technical access is not authority. For local file persistence, the grant must include `local-write`; absence of a matching grant is a blocker and the provider must produce zero mutation. Immediately before local file persistence, the consumer must execute the installed Core helper below (or call its exported `requireLocalWrite` with the same inputs), check successful exit and `allowed: true`, and use the returned exact target. A failure blocks all creation/modification; analysis and proposed content may proceed where permitted. This eligibility check does not waive separate denial, approval, runtime-generation, effect-reconciliation, or human-boundary rules. It never writes the artifact.
+
+```text
+node <installed-core-root>/skills/project-runtime/scripts/authority-guard.mjs --project-root <current-project-root> --request <request.json>
+```
+
+The request contains `projectId`, `principalId`, `department`, `taskRef: {kind: "Task", id, revision}`, `agentRef: {kind: "AgentInstance", id, revision}`, `capability`, `operation`, `effectClass: "local-write"`, `target` (an exact Project-relative file path), and `resourceRef: {type, id, uri: target}` with `version` when the scoped resource has one. Resolve the installed Core root through the current provider/runtime binding; do not assume a machine-specific installation path.
+
+The helper reads the current `.woia/project.json` and Project-owned records in `.woia/tasks/*.json`, `.woia/agents/*.json`, and `.woia/authority-contexts/*.json`. AuthorityContext records retain `dev.woia.authority-context/v1`; the latter directory is their durable location, not a new authority schema. The AgentInstance must reference the current AuthorityContext with `kind: "AuthorityContext"`, identity and revision. Task refs use `kind`, not resource refs' `type`. Missing, stale, ambiguous, or cross-Task references deny eligibility. The Project/department must match, Task and AgentInstance must be active, and Task blockers must be empty.
+
+The target must be listed exactly in the Task's `expected_outputs` and in the AgentInstance's `resource_scope` with the same resource identity, URI, and optional version. These records are authored by the authorized orchestrator/operator; a provider must not broaden them or create a grant to authorize its own pending write. Absolute paths, traversal, Windows alternate/device paths, and symlink/junction targets or ancestors are denied. Recheck against fresh records immediately before the operation if any state or target changes; eligibility is not a reusable permission token or an OS filesystem sandbox. Nonempty opaque v1 `denials` remain fail-closed without interpreting their strings as a new policy language.
 
 ## Runtime generations
 
