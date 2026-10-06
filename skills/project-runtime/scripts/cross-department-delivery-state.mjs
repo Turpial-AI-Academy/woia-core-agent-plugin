@@ -44,15 +44,15 @@ export function markActivationUnavailable(record,{now,blocker,activationRef=null
 }
 export function recoverBlockedDelivery(record,{now}){
   const next=copy(record);iso(now,"now");if(next.state!=="blocked")fail("only blocked delivery can recover");if(next.receiver_task_ref)fail("receiver task exists; recover result, not delivery");
-  next.state="queued";next.transport_ref=null;next.activation={state:"not-requested",ref:null};next.blockers=[];next.revision+=1;next.updated_at=now;return next;
+  next.state="delivered";next.activation={state:"requested",ref:null};next.blockers=[];next.revision+=1;next.updated_at=now;return next;
 }
 export function acceptDelivery(record,{now,receiverTaskRef}){
   const next=copy(record);iso(now,"now");if(next.state!=="activated")fail("delivery must be activated before acceptance");if(!receiverTaskRef?.kind||!receiverTaskRef?.id)fail("receiverTaskRef is required");
   if(receiverTaskRef.id===next.origin.task_ref.id)fail("receiver must own a distinct Task");next.state="accepted";next.receiver_task_ref=copy(receiverTaskRef);next.revision+=1;next.updated_at=now;return next;
 }
-export function rejectDelivery(record,{now,responseRef=null,blocker=null}){
-  const next=copy(record);iso(now,"now");if(!["activated","accepted"].includes(next.state))fail("delivery cannot be rejected from current state");
-  next.state="rejected";next.response_ref=responseRef?copy(responseRef):null;next.blockers=blocker?[copy(blocker)]:[];next.revision+=1;next.updated_at=now;return next;
+export function rejectDelivery(record,{now,responseRef,blocker=null}){
+  const next=copy(record);iso(now,"now");if(!["activated","accepted"].includes(next.state))fail("delivery cannot be rejected from current state");if(!responseRef)fail("responseRef is required for receiver rejection");
+  next.state="result-returned";next.response_ref=copy(responseRef);next.response_status="rejected";next.blockers=blocker?[copy(blocker)]:[];next.revision+=1;next.updated_at=now;return next;
 }
 export function returnDeliveryResult(record,{now,responseRef,responseStatus}){
   const next=copy(record);iso(now,"now");if(next.state!=="accepted")fail("receiver must accept before returning result");if(!responseRef)fail("responseRef is required");if(!["completed","blocked","rejected","accepted"].includes(responseStatus))fail("invalid responseStatus");

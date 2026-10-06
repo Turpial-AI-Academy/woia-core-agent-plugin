@@ -5,9 +5,10 @@ function fail(message){throw new Error(message);}
 function canonical(value){if(Array.isArray(value))return "["+value.map(canonical).join(",")+"]";if(value&&typeof value==="object")return "{"+Object.keys(value).sort().map(k=>JSON.stringify(k)+":"+canonical(value[k])).join(",")+"}";return JSON.stringify(value);}
 async function atomicWrite(file,content){await mkdir(path.dirname(file),{recursive:true});const temp=file+".tmp-"+process.pid+"-"+Date.now();await writeFile(temp,content,"utf8");await rename(temp,file);}
 function active(binding,at){const t=Date.parse(at);if(binding.effective_from&&Date.parse(binding.effective_from)>t)return false;if(binding.effective_until&&Date.parse(binding.effective_until)<=t)return false;return true;}
-export function resolveProjectResources({bindingSet,projectRef,department,purpose,resolvedAt}){
+export function resolveProjectResources({bindingSet,organizationRef,projectRef,department,purpose,resolvedAt}){
   if(bindingSet?.schema!=="dev.woia.organization-resource-binding-set/v1")fail("unsupported organization resource binding schema");
-  if(!projectRef||!department||!purpose)fail("projectRef, department and purpose are required");
+  if(!organizationRef||!projectRef||!department||!purpose)fail("organizationRef, projectRef, department and purpose are required");
+  if(bindingSet.organization_ref!==organizationRef)fail("organization resource binding does not match requested organization");
   if(!Number.isFinite(Date.parse(resolvedAt)))fail("resolvedAt must be ISO date-time");
   const resources=[];
   for(const binding of bindingSet.bindings??[]){
@@ -29,6 +30,6 @@ export function resolveProjectResources({bindingSet,projectRef,department,purpos
   return {schema:"dev.woia.project-resource-resolution/v1",id:"resource-resolution:"+digest.slice(7,19),...identity,composed_digest:digest,resolved_at:resolvedAt};
 }
 export async function resolveProjectResourcesFromFile({bindingSetFile,projectRef,department,purpose,resolvedAt,output}){
-  const bindingSet=JSON.parse(await readFile(bindingSetFile,"utf8"));const doc=resolveProjectResources({bindingSet,projectRef,department,purpose,resolvedAt});
+  const bindingSet=JSON.parse(await readFile(bindingSetFile,"utf8"));const doc=resolveProjectResources({bindingSet,organizationRef:bindingSet.organization_ref,projectRef,department,purpose,resolvedAt});
   if(output)await atomicWrite(path.resolve(output),JSON.stringify(doc,null,2)+"\n");return doc;
 }
