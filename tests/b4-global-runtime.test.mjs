@@ -6,7 +6,7 @@ import {
 import {
   createDelivery, claimDelivery, markSubmitted, markTransportUnknown, markDelivered,
   reconcileNotDelivered, markActivated, markActivationUnavailable, recoverBlockedDelivery,
-  acceptDelivery, returnDeliveryResult, completeDelivery
+  acceptDelivery, rejectDelivery, returnDeliveryResult, completeDelivery
 } from "../skills/project-runtime/scripts/cross-department-delivery-state.mjs";
 import {resolveProjectResources} from "../skills/project-runtime/scripts/resolve-project-resources.mjs";
 import {createOrchestratorCompositionSnapshot} from "../skills/project-improvement/scripts/create-orchestrator-composition-snapshot.mjs";
@@ -50,8 +50,10 @@ test("cross-department delivery distinguishes submission, unknown transport, del
   assert.throws(()=>claimDelivery(d,{workerId:"transport:2",token:"claim:2",now:t2,expiresAt:t3}),/cannot be claimed/);
   d=markDelivered(d,{now:t3,transportRef:{type:"TransportReceipt",id:"receipt:1"}});
   d=markActivated(d,{now:"2026-10-06T12:04:00Z",activationRef:{type:"Activation",id:"activation:1"}});
-  assert.throws(()=>acceptDelivery(d,{now:"2026-10-06T12:05:00Z",receiverTaskRef:{kind:"Task",id:"task:sales",revision:2}}),/distinct Task/);
-  d=acceptDelivery(d,{now:"2026-10-06T12:05:00Z",receiverTaskRef:{kind:"Task",id:"task:cs",revision:1}});
+  assert.throws(()=>acceptDelivery(d,{now:"2026-10-06T12:05:00Z",receiverTaskRef:{kind:"Task",id:"task:sales",revision:2},acceptanceResponseRef:{type:"CrossDepartmentResponse",id:"resp:bad"}}),/distinct Task/);
+  d=acceptDelivery(d,{now:"2026-10-06T12:05:00Z",receiverTaskRef:{kind:"Task",id:"task:cs",revision:1},acceptanceResponseRef:{type:"CrossDepartmentResponse",id:"resp:accepted"}});
+  assert.equal(d.acceptance_response_ref.id,"resp:accepted");
+  assert.throws(()=>returnDeliveryResult(d,{now:"2026-10-06T12:05:30Z",responseRef:{type:"CrossDepartmentResponse",id:"resp:not-terminal"},responseStatus:"accepted"}),/terminal/);
   d=returnDeliveryResult(d,{now:"2026-10-06T12:06:00Z",responseRef:{type:"CrossDepartmentResponse",id:"resp:1"},responseStatus:"completed"});
   d=completeDelivery(d,{now:"2026-10-06T12:07:00Z"});
   assert.equal(d.state,"completed");
@@ -111,6 +113,10 @@ test("Project resource resolution filters by organization-scoped department purp
   const sales=resolveProjectResources({bindingSet,organizationRef:"org:agency",projectRef:"project:sales",department:"sales",purpose:"commercial",resolvedAt:t1});
   assert.deepEqual(sales.resources.map(x=>x.binding_id),["real-estate-contract"]);
   assert.equal(JSON.stringify(sales).includes("finance-source-map"),false);
+  const duplicate=structuredClone(bindingSet);duplicate.bindings.push(structuredClone(duplicate.bindings[0]));
+  assert.throws(()=>resolveProjectResources({bindingSet:duplicate,organizationRef:"org:agency",projectRef:"project:data",department:"data",purpose:"governance",resolvedAt:t1}),/duplicate organization resource binding id/);
+  const badInterval=structuredClone(bindingSet);badInterval.bindings[0].effective_from=t2;badInterval.bindings[0].effective_until=t1;
+  assert.throws(()=>resolveProjectResources({bindingSet:badInterval,organizationRef:"org:agency",projectRef:"project:data",department:"data",purpose:"governance",resolvedAt:t1}),/effective interval/);
   assert.throws(()=>resolveProjectResources({bindingSet,organizationRef:"org:other",projectRef:"project:data",department:"data",purpose:"governance",resolvedAt:t1}),/does not match requested organization/);
 });
 
@@ -125,7 +131,7 @@ test("orchestrator specialization activates only an evaluated exact base/delta/p
     ]
   };
   const args={
-    declaration,taskRef:{kind:"Task",id:"task:acq",revision:1},projectRef:"project:acq",
+    declaration,taskRef:{kind:"Task",id:"task:acq",revision:1},projectRef:"project:acq",department:"supply-acquisition",
     baseVersion:"0.5.1",baseSelector:"v0.5.1",deltaVersion:"0.5.0",deltaSelector:"v0.5.0",
     providers:[{plugin:"woia-re-property-data",version:"0.5.0",selector:"v0.5.0"}],
     organizationRevision:2,departmentRevision:3,createdAt:t0
@@ -134,6 +140,14 @@ test("orchestrator specialization activates only an evaluated exact base/delta/p
   assert.equal(a.composed_digest,b.composed_digest);
   assert.equal(a.active_root.plugin,"woia-re-property-acquisition");
   assert.equal(a.generic_base.plugin,"woia-supply-acquisition");
+  assert.match(a.declaration_digest,/^sha256:[0-9a-f]{64}$/);
+  assert.deepEqual(a.required_gates,["base-conformance","delta-narrowing"]);
+  const changed={...declaration,required_gates:[...declaration.required_gates,"new-gate"]};
+  const changedSnapshot=createOrchestratorCompositionSnapshot({...args,declaration:changed});
+  assert.notEqual(changedSnapshot.composed_digest,a.composed_digest);
+  assert.throws(()=>createOrchestratorCompositionSnapshot({...args,department:"marketing"}),/requested department/);
   assert.throws(()=>createOrchestratorCompositionSnapshot({...args,baseVersion:"0.6.0"}),/outside compatible range/);
   assert.throws(()=>createOrchestratorCompositionSnapshot({...args,providers:[]}),/provider closure/);
+  const noEvidence=structuredClone(declaration);noEvidence.evaluated_pairs[0].evidence=[];
+  assert.throws(()=>createOrchestratorCompositionSnapshot({...args,declaration:noEvidence}),/evaluation evidence/);
 });
