@@ -135,3 +135,27 @@ Unknown effects are never automatically retried. Reconcile them first.
 ## Human boundaries
 
 Ask only at genuine boundaries: exact provider installation authorization; credentials/access only the human can grant; approval/risk acceptance required by policy; consequential external effects; or a runtime restart/new session the host cannot create itself. Otherwise continue autonomously.
+
+## B4 global runtime prerequisites
+
+Core now defines the missing global **semantics** without becoming a central backend or transport service.
+
+### Due Work
+
+Use `dev.woia.due-work/v1` for a durable organization-hosted due occurrence. The stable `dedupe_key` identifies one subject/rule/period occurrence. Workers claim with an incrementing fence and expiring token; stale claims cannot complete work. A wake only creates/resumes/evaluates work and never grants business authority. The deterministic reference transition helper is `due-work-state.mjs`; the physical durable store/worker belongs to the selected Technology/runtime implementation.
+
+### Autonomous cross-department delivery
+
+The existing typed request/response remains the business protocol. `dev.woia.cross-department-delivery/v1` adds a durable delivery record with distinct queued → claimed → submitted → delivered → activated → accepted → result-returned → completed states. A submitted call with unknown outcome becomes `transport-unknown`; it may be retried only after reconciliation proves it was not delivered. Receiver activation failure becomes an owned blocker. Receiver acceptance creates/resumes a distinct receiver-owned Task; transport ACK is not acceptance or completion.
+
+Harness adapters such as Project Bridge implement transport/activation when the host supports it. Core defines correlation/recovery semantics; it does not pretend an unsupported host can activate another Project. No human copy/paste or external-person message is a successful transport fallback.
+
+### Organization resource binding
+
+Organization data/policy/domain resources remain outside the Project. A selected organization integration supplies `dev.woia.organization-resource-binding-set/v1`. Core resolves only the entries allowed for the Project's department + purpose into an immutable `dev.woia.project-resource-resolution/v1` reference snapshot. The snapshot contains resource/binding references and minimum fields/operations, never credentials or a copied organization database. The current closed Project v1 schema is not privately extended; linked binding records live under the existing bindings/runtime mechanism.
+
+### Independent base + delta composition
+
+A vertical specialization is activated only from a qualified Ecosystem `dev.woia.orchestrator-specialization/v1` declaration. Core creates `dev.woia.orchestrator-composition-snapshot/v1` only when the exact base version is inside the declared range, the exact base/delta pair has passed evaluation, and the actual provider closure matches that evaluated pair. The delta is the one active root; the generic base is a dependency, not a competing root. In-flight Tasks keep the exact snapshot. Unsupported upgrades block instead of silently rebinding.
+
+These linked records deliberately avoid adding private fields to existing closed v1 Project, Task, OrganizationRegistry or EffectiveCapabilitySnapshot schemas. Business/domain data transactions remain separate from Core filesystem state and remote effects.
