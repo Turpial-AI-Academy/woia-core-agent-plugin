@@ -67,4 +67,4 @@ The Project stores operational state and references. It is not a copy of organiz
 
 ## B4 compatibility layer
 
-The v0.5.2 source now carries compatible linked v1 contracts for Due Work, autonomous delivery, organization-resource resolution and independent orchestrator specialization snapshots. Existing closed schemas remain readable and unchanged. This source change is not itself a published release or proof of a real host/worker; exact release/admission and operator-host qualification remain separate gates.
+The current source carries compatible linked v1 contracts for Due Work, autonomous delivery, organization-resource resolution and independent orchestrator specialization snapshots. Existing closed schemas remain readable and unchanged. This source change is not itself a published release or proof of a real host/worker; exact release/admission and operator-host qualification remain separate gates.
