@@ -38,10 +38,15 @@
         }
       ]
     },
-    "task_ref":{"anyOf":[{"$ref":"./common.schema.json#/$defs/ref"},{"type":"null"}]},
+    "task_ref":{"anyOf":[{"allOf":[{"$ref":"./common.schema.json#/$defs/ref"},{"properties":{"kind":{"const":"Task"}}}]},{"type":"null"}]},
     "last_result_ref":{"anyOf":[{"$ref":"./common.schema.json#/$defs/resourceRef"},{"type":"null"}]},
     "blockers":{"type":"array","items":{"$ref":"./common.schema.json#/$defs/blocker"}},
     "created_at":{"$ref":"./common.schema.json#/$defs/datetime"},
     "updated_at":{"$ref":"./common.schema.json#/$defs/datetime"}
-  }
+  },
+  "allOf":[{
+    "if":{"properties":{"state":{"const":"claimed"}},"required":["state"]},
+    "then":{"properties":{"claim":{"type":"object"},"fence":{"minimum":1}}},
+    "else":{"properties":{"claim":{"type":"null"}}}
+  }]
 }
