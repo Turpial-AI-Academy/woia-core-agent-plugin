@@ -1,9 +1,11 @@
+import {instant as iso, requireTaskRef} from "./b4-contract.mjs";
 function fail(message){throw new Error(message);}
-function iso(value,label){const ms=Date.parse(value);if(!Number.isFinite(ms))fail(label+" must be ISO date-time");return ms;}
 function copy(value){return structuredClone(value);}
-function requireClaim(record,{token,fence}){
+function requireClaim(record,{token,fence,now}){
   if(record.state!=="claimed"||!record.claim)fail("due work is not actively claimed");
   if(record.claim.token!==token||record.claim.fence!==fence||record.fence!==fence)fail("stale due-work claim");
+  const at=iso(now,"now");
+  if(at<iso(record.claim.claimed_at,"claim start")||at>=iso(record.claim.expires_at,"claim expiry"))fail("expired or not yet valid due-work claim");
 }
 export function createDueWork({id,organizationRef,department,projectRef,rule,subjectRef,dedupeKey,dueAt,timezone,now}){
   if(!id||!organizationRef||!department||!projectRef||!rule?.id||!rule?.version||!subjectRef||!dedupeKey||!timezone)fail("missing due-work identity");
@@ -15,13 +17,14 @@ export function claimDueWork(record,{workerId,token,now,expiresAt}){
   if(!workerId||!token)fail("workerId and token are required");
   if(["completed","cancelled"].includes(next.state))fail("terminal due work cannot be claimed");
   if(next.state==="blocked")fail("blocked due work must be resumed explicitly");
+  if(next.state==="claimed"&&!next.claim)fail("claimed due work requires a claim");
   if(next.state==="claimed"&&next.claim&&iso(next.claim.expires_at,"existing claim expiry")>nowMs)fail("due work already has an active claim");
   const fence=(next.fence??0)+1;
   next.state="claimed";next.attempt=(next.attempt??0)+1;next.fence=fence;next.claim={token,worker_id:workerId,fence,claimed_at:now,expires_at:expiresAt};next.revision+=1;next.updated_at=now;
   return next;
 }
 export function releaseDueWork(record,{token,fence,now,nextDueAt=null,blocker=null}){
-  const next=copy(record);requireClaim(next,{token,fence});iso(now,"now");
+  const next=copy(record);requireClaim(next,{token,fence,now});
   if(nextDueAt)iso(nextDueAt,"nextDueAt");
   next.claim=null;
   if(blocker){next.state="blocked";next.blockers=[copy(blocker)];}
@@ -33,11 +36,12 @@ export function resumeDueWork(record,{now,dueAt=null}){
   next.state="pending";next.blockers=[];next.claim=null;if(dueAt)next.due_at=dueAt;next.revision+=1;next.updated_at=now;return next;
 }
 export function attachDueWorkTask(record,{token,fence,taskRef,now}){
-  const next=copy(record);requireClaim(next,{token,fence});iso(now,"now");if(!taskRef?.kind||!taskRef?.id)fail("taskRef is required");
+  const next=copy(record);requireClaim(next,{token,fence,now});requireTaskRef(taskRef,"taskRef");
+  if(next.task_ref&&(next.task_ref.kind!==taskRef.kind||next.task_ref.id!==taskRef.id))fail("existing due-work Task must be preserved");
   next.task_ref=copy(taskRef);next.revision+=1;next.updated_at=now;return next;
 }
 export function completeDueWork(record,{token,fence,now,resultRef=null}){
-  const next=copy(record);requireClaim(next,{token,fence});iso(now,"now");
+  const next=copy(record);requireClaim(next,{token,fence,now});
   next.state="completed";next.claim=null;next.blockers=[];next.last_result_ref=resultRef?copy(resultRef):null;next.revision+=1;next.updated_at=now;return next;
 }
 export function cancelDueWork(record,{now}){

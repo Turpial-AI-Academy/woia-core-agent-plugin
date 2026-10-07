@@ -144,9 +144,13 @@ Core now defines the missing global **semantics** without becoming a central bac
 
 Use `dev.woia.due-work/v1` for a durable organization-hosted due occurrence. The stable `dedupe_key` identifies one subject/rule/period occurrence. Workers claim with an incrementing fence and expiring token; stale claims cannot complete work. A wake only creates/resumes/evaluates work and never grants business authority. The deterministic reference transition helper is `due-work-state.mjs`; the physical durable store/worker belongs to the selected Technology/runtime implementation.
 
+Every claim-owned mutation requires a current token/fence and an observation time inside the claim's interval (expiry is exclusive). Block/retry retains the same occurrence and existing Task identity; `attachDueWorkTask` cannot replace it with another Task. The durable store still owns atomic revision/fence comparison and occurrence uniqueness.
+
 ### Autonomous cross-department delivery
 
 The existing typed request/response remains the business protocol. `dev.woia.cross-department-delivery/v1` adds a durable delivery record with distinct queued → claimed → submitted → delivered → activated → accepted → result-returned → completed states. A submitted call with unknown outcome becomes `transport-unknown`; it may be retried only after reconciliation proves it was not delivered. Receiver activation failure becomes an owned blocker. Receiver acceptance creates/resumes a distinct receiver-owned Task; transport ACK is not acceptance or completion.
+
+Use `createDeliveryResponse` to construct a typed response from the delivery's request/correlation and receiver-owned Task. Persist that response separately, then supply both its `CrossDepartmentResponse` reference and actual response to `acceptDelivery` (`acceptanceResponse`), `returnDeliveryResult` or `rejectDelivery` (`response`). Transitions verify status, request/correlation, destination Project/department and Task identity. Acceptance acknowledgement and terminal result require distinct references; an accepted acknowledgement cannot complete delivery. The receiver evaluates its own authority separately; no sender authority enters the generated response or delivery identity.
 
 Harness adapters such as Project Bridge implement transport/activation when the host supports it. Core defines correlation/recovery semantics; it does not pretend an unsupported host can activate another Project. No human copy/paste or external-person message is a successful transport fallback.
 
@@ -154,8 +158,12 @@ Harness adapters such as Project Bridge implement transport/activation when the 
 
 Organization data/policy/domain resources remain outside the Project. A selected organization integration supplies `dev.woia.organization-resource-binding-set/v1`. Core resolves only the entries allowed for the Project's department + purpose into an immutable `dev.woia.project-resource-resolution/v1` reference snapshot. The snapshot contains resource/binding references and minimum fields/operations, never credentials or a copied organization database. The current closed Project v1 schema is not privately extended; linked binding records live under the existing bindings/runtime mechanism.
 
+Both resolver entrypoints require the authenticated expected `organizationRef`; the file entrypoint must never infer it from the file being checked. Closed binding/contract/reference fields and strictly valid effective dates fail closed before filtering; mutable organization references are copied by value. Each resolution's digest pins its versioned minimum view; persist it under a distinct immutable snapshot identity.
+
 ### Independent base + delta composition
 
 A vertical specialization is activated only from a qualified Ecosystem `dev.woia.orchestrator-specialization/v1` declaration. Core creates `dev.woia.orchestrator-composition-snapshot/v1` only when the exact base version is inside the declared range, the exact base/delta pair has passed evaluation, and the actual provider closure matches that evaluated pair. The delta is the one active root; the generic base is a dependency, not a competing root. In-flight Tasks keep the exact snapshot. Unsupported upgrades block instead of silently rebinding.
+
+Selectors must be the exact `v<version>` tag or an immutable commit SHA already qualified through Ecosystem; Core does not re-run release admission. Declaration semantics and evaluation evidence must be non-empty correctly typed arrays. The file writer atomically creates the snapshot without replacement: competing writers with different semantics cannot overwrite an in-flight Task's winner.
 
 These linked records deliberately avoid adding private fields to existing closed v1 Project, Task, OrganizationRegistry or EffectiveCapabilitySnapshot schemas. Business/domain data transactions remain separate from Core filesystem state and remote effects.
