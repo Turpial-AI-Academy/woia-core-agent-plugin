@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.3 - 2026-10-06
+
+- Add fenced Due Work contracts/transitions, durable cross-department delivery/activation/result/recovery, and organization resource resolution required by the approved B4 runtime contract.
+- Add independently released orchestrator base+delta composition declarations/snapshots with provider-closure pinning while preserving existing closed v1 schemas and Core authority boundaries.
+
 ## 0.5.2 - 2026-10-05
 
 - Add a generic fail-closed authority grant guard and prove Business Rules local-write cannot mutate without an exact grant.

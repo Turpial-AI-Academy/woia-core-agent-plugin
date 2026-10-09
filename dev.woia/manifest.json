@@ -1,6 +1,6 @@
 {
   "schema": "dev.woia.core-manifest/v1",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "skills": [
     "project-runtime",
     "opea-h",
