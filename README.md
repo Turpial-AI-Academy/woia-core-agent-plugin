@@ -1,6 +1,6 @@
 # WOIA Core
 
-`woia-core` v0.5.6 supplies the shared operating contracts used by every WOIA department. Install the published plugin through the WOIA bootstrap or your department marketplace. Project customization belongs in Project overlays; installed plugin files remain immutable.
+`woia-core` v0.5.7 supplies the shared operating contracts used by every WOIA department. Install the published plugin through the WOIA bootstrap or your department marketplace. Project customization belongs in Project overlays; installed plugin files remain immutable.
 
 ## Operating capabilities
 

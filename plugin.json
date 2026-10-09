@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "woia-core",
-  "version": "0.5.6",
+  "version": "0.5.7",
   "description": "WOIA cross-department operating core for Project bootstrap, durable Tasks, OPEA-H, provider/runtime lifecycle, evidence, effects, improvement, overlays, and safe updates.",
   "author": {
     "name": "Turpial AI Academy",
