@@ -62,7 +62,6 @@ export const AUTHORING_ROOT_FILES = Object.freeze([
   "CONTRIBUTING.md",
   "SECURITY.md",
   "README.plugin.md",
-  "VALIDATION.md",
   "package.json",
   "pnpm-lock.yaml",
   "pnpm-workspace.yaml",
@@ -75,7 +74,6 @@ export const AUTHORING_ROOT_FILES = Object.freeze([
 export const AUTHORING_ROOT_DIRS = Object.freeze([
   ".github/",
   "scripts/",
-  "tests/",
   "docs/",
 ]);
 

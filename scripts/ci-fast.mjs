@@ -3,7 +3,8 @@ import { ROOT } from "./lib/plugin.mjs";
 
 for (const args of [
   ["scripts/validate-plugin.mjs"],
-  ["--test"],
+  ["scripts/validate-core-contracts.mjs"],
+  ["scripts/check-checksums.mjs"],
 ]) {
   const result = spawnSync(process.execPath, args, { cwd: ROOT, stdio: "inherit" });
   if (result.error) throw result.error;

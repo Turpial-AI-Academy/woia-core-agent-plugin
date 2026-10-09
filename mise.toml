@@ -22,9 +22,6 @@ run = "node scripts/doctor.mjs"
 [tasks.validate]
 run = "node scripts/validate-plugin.mjs"
 
-[tasks.test]
-run = "node --test"
-
 [tasks."ci:fast"]
 run = "node scripts/ci-fast.mjs"
 

@@ -1,6 +1,6 @@
 {
   "schema": "dev.woia.core-manifest/v1",
-  "version": "0.5.3",
+  "version": "0.5.6",
   "skills": [
     "project-runtime",
     "opea-h",
@@ -41,11 +41,6 @@
     "opea-h-full"
   ],
   "storage_root": ".woia",
-  "source_lineage": {
-    "foundation_repository": "Therenovatioai/woia-foundation",
-    "asps_repository": "Turpial-AI-Academy/asps-agent-plugin",
-    "extraction_policy": "carry-forward-invariants-not-monolith-runtime"
-  },
   "deterministic_tools": [
     {
       "id": "agent.thread.lifecycle",

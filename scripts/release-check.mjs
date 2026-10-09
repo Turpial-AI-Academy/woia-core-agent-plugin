@@ -39,10 +39,9 @@ function assertCleanTree(root) {
   assert(status.trim() === "", "release:check requires a clean Git working tree, including untracked files");
 }
 
-function runCandidateTests(root, { quiet = false } = {}) {
+function runCandidateContracts(root, { quiet = false } = {}) {
   const environment = { ...process.env };
-  delete environment.NODE_TEST_CONTEXT;
-  const result = spawnSync(process.execPath, ["--test"], {
+  const result = spawnSync(process.execPath, ["scripts/ci-fast.mjs"], {
     cwd: root,
     encoding: "utf8",
     env: environment,
@@ -51,7 +50,7 @@ function runCandidateTests(root, { quiet = false } = {}) {
   if (result.error) throw result.error;
   if (!quiet && result.stdout) process.stdout.write(result.stdout);
   if (!quiet && result.stderr) process.stderr.write(result.stderr);
-  assert(result.status === 0, `release:check failed because the discovered test suite exited with ${result.status ?? "unknown"}`);
+  assert(result.status === 0, `release:check failed because candidate contract validation exited with ${result.status ?? "unknown"}`);
 }
 
 async function validateReleaseVersion(root, manifest) {
@@ -98,7 +97,7 @@ export async function runReleaseCheck(root = ROOT, { quiet = false } = {}) {
   await scanPortablePayload(root);
   await validateReleaseVersion(root, manifest);
 
-  runCandidateTests(root, { quiet });
+  runCandidateContracts(root, { quiet });
   const archiveFiles = await validatePortableArchive(root, "HEAD");
   assertCleanTree(root);
   const currentHead = gitOutput(root, ["rev-parse", "--verify", "HEAD^{commit}"]);
@@ -106,7 +105,7 @@ export async function runReleaseCheck(root = ROOT, { quiet = false } = {}) {
 
   if (!quiet) {
     console.log(`release:check: ${manifest.name}@${manifest.version} candidate ${candidate}`);
-    console.log(`release:check: manifest, MCP, template placeholders, skills, links, paths, secrets, tests, version, whitespace, and ${archiveFiles}-file portable archive OK`);
+    console.log(`release:check: manifest, MCP, template placeholders, skills, links, paths, secrets, contracts, checksums, version, whitespace, and ${archiveFiles}-file portable archive OK`);
   }
   return { candidate, version: manifest.version, archiveFiles };
 }

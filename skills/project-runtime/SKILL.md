@@ -136,9 +136,9 @@ Unknown effects are never automatically retried. Reconcile them first.
 
 Ask only at genuine boundaries: exact provider installation authorization; credentials/access only the human can grant; approval/risk acceptance required by policy; consequential external effects; or a runtime restart/new session the host cannot create itself. Otherwise continue autonomously.
 
-## B4 global runtime prerequisites
+## Global runtime prerequisites
 
-Core now defines the missing global **semantics** without becoming a central backend or transport service.
+Core defines portable global operating semantics without becoming a central backend or transport service.
 
 ### Due Work
 

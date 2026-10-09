@@ -1,70 +1,33 @@
 # WOIA Core
 
-`woia-core` is the cross-department operating core for WOIA v0.5.0.
+`woia-core` v0.5.6 supplies the shared operating contracts used by every WOIA department. Install the published plugin through the WOIA bootstrap or your department marketplace. Project customization belongs in Project overlays; installed plugin files remain immutable.
 
-It is deliberately **not** a department methodology and not a central backend. Department orchestrators such as `woia-software`, `woia-marketing`, and `woia-sales` use this plugin for shared operating mechanics.
+## Operating capabilities
 
-## What Core owns
+- Project bootstrap, provider discovery and runtime readiness.
+- Durable Tasks, TaskCells, checkpoints, execution receipts and recovery.
+- Independent AgentDefinitions, AgentInstances and native runtime bindings.
+- One native thread per AgentInstance and root session, with a new run and receipt for each delegation.
+- Fail-closed capability, operation, effect and resource authority checks before provider mutations.
+- Proportional non-software OPEA-H profiles; Software retains its own methodology.
+- Immutable capability and orchestrator composition snapshots for in-flight Tasks.
+- Organization-owned resource bindings, fenced Due Work and correlated cross-department delivery.
+- Consumer overlays, self-evaluation and update compatibility reconciliation.
 
-- one-invocation Project bootstrap and persistent root-agent binding;
-- provider discovery/install/update/enablement/runtime-load lifecycle;
-- fail-closed authority grants for provider-owned mutations, including explicit `local-write` before file persistence;
-- durable Task and TaskCell state;
-- proportional OPEA-H profiles for non-software persistent work;
-- AgentDefinition / AgentInstance / HarnessRuntimeBinding separation;
-- one native custom-agent thread per AgentInstance and root session, with new run/receipt identities for each delegation;
-- execution receipts and evidence provenance;
-- effect tracking, including unknown-effect reconciliation before retry;
-- checkpoints, blockers, recovery and resume;
-- self-evaluation and ImprovementCandidate generation;
-- immutable-base Project overlays;
-- effective capability snapshots for in-flight Task reproducibility;
-- fenced Due Work semantics and deterministic transitions;
-- durable cross-department delivery/activation/result/recovery semantics;
-- organization-resource binding resolution without Project-local data masters;
-- exact independently released orchestrator base+delta composition snapshots.
+## Starting and resuming a Project
 
-## What Core does not own
+Invoke `woia-core:project-runtime` from the department Project. Follow its bootstrap and provider resolution contract, then observe the generation and role identities actually loaded by the host. Provider work requires matching loaded and materialized generations. A new host session is required after runtime or custom-role changes; a generated configuration alone does not establish readiness.
 
-- Software's 23 phases or Release Hygiene;
-- Marketing/Sales methodology;
-- provider capability implementation;
-- organizational CRM/ERP/database records;
-- source publication or marketplace governance;
-- the physical queue/worker, host transport implementation, business/domain database, or external organization systems; Core supplies the contracts and transition semantics, while selected adapters/infrastructure operate them.
+The root selects capabilities for each Task within the Project's stable departmental binding. Provider execution must use the required role, Task, AgentInstance, capability snapshot and authority scope. Reserve the native thread through Core before spawning; reuse its binding within the root session. On uncertain external effects, reconcile the durable effect record before retrying.
 
-## Consumer state
+## Durable Project state
 
-A WOIA-managed Project uses:
-
-```text
-.woia/
-├── project.json
-├── tasks/
-├── task-cells/
-├── agents/
-├── bindings/
-├── receipts/
-├── effects/
-├── checkpoints/
-├── improvements/
-├── overlays/
-└── snapshots/
-```
-
-The Project stores operational state and references. It is not a copy of organizational systems of record.
+Core maintains `.woia/project.json` and the Project's `tasks`, `task-cells`, `agents`, `bindings`, `receipts`, `effects`, `checkpoints`, `improvements`, `overlays` and `snapshots` directories. These records contain operational state and organization references, not copies of organizational systems of record.
 
 ## Portable skills
 
-- `project-runtime` — bootstrap, provider/runtime lifecycle, custom-agent materialization, updates and continuation.
-- `opea-h` — proportional Orchestration → Planning → Execution → Audit → Human Review.
-- `project-improvement` — self-evaluation, improvement classification, overlays and update reconciliation.
+- `woia-core:project-runtime`: bootstrap, runtime lifecycle, updates and continuation.
+- `woia-core:opea-h`: proportional planning, execution, independent audit and human review.
+- `woia-core:project-improvement`: improvement classification, overlays and compatibility reconciliation.
 
-## Core invariant
-
-> Base plugins are immutable to consumers; project personalization is separate state; in-flight Tasks pin the effective capability they started with.
-
-
-## B4 compatibility layer
-
-The current source carries compatible linked v1 contracts for Due Work, autonomous delivery, organization-resource resolution and independent orchestrator specialization snapshots. Existing closed schemas remain readable and unchanged. This source change is not itself a published release or proof of a real host/worker; exact release/admission and operator-host qualification remain separate gates.
+Core supplies contracts and deterministic transitions. Department orchestrators own methodology; provider plugins own capabilities; host adapters own transport and execution. Technical access never grants business authority.

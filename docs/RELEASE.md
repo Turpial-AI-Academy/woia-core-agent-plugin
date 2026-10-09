@@ -1,19 +1,17 @@
 # Release
 
-Original immutable baseline: `v0.5.0`. Core source version `0.5.2` preserves the global custom-agent thread lifecycle correction and binds provider local-write eligibility to durable Project/Task/AgentInstance authority and exact resource scope. Publication is established by the exact tag, final Release and verified artifact evidence; the latest Programme handoff identifies the current immutable Operator E2E graph. Never move or replace `v0.5.0`.
+Core's current distribution version is `0.5.6`. Public plugin identity is `woia-core`.
 
-WOIA Core releases are produced only by authorized Turpial AI Academy WOIA maintainers/developers through the woia-ecosystem Factory.
+Authorized maintainers prepare a release from an exact clean commit using Node 24.21.0 and pnpm 11.19.0:
 
-Before a release candidate:
+```text
+mise run doctor
+mise run ci:fast
+mise run release:check
+```
 
-1. run the repository's proportional local gates;
-2. commit an exact clean candidate;
-3. certify it through woia-ecosystem plugin:certify;
-4. prepare immutable release evidence;
-5. run publication preflight;
-6. obtain explicit maintainer publication authorization;
-7. publish the exact tag/asset;
-8. admit the verified release into the WOIA global registry;
-9. regenerate affected department marketplaces.
+`ci:fast` checks plugin metadata, portable payload safety, Core schema compilation, workflow profiles, deterministic script syntax and distributed checksums. `release:check` additionally checks candidate identity, version consistency, Git whitespace and the exact portable archive contents.
 
-Published tags/releases are immutable. Fixes create a new SemVer version.
+Certify and publish through the current Ecosystem Factory flow, preserving the candidate SHA. Verify the new tag, final Release, downloadable assets and SHA-256 values before admitting the release and regenerating marketplace pins. Publication requires the repository's maintainer authorization and effective GitHub protections.
+
+Published tags and Releases remain immutable. Corrections use a new version. Runtime protocol schema identifiers remain stable unless their contracts require an explicit protocol migration.
