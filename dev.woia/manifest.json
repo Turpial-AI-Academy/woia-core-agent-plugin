@@ -1,6 +1,6 @@
 {
   "schema": "dev.woia.core-manifest/v1",
-  "version": "0.5.7",
+  "version": "0.5.8",
   "skills": [
     "project-runtime",
     "opea-h",
@@ -31,7 +31,11 @@
     "cross-department-delivery",
     "organization-resource-binding-set",
     "project-resource-resolution",
-    "orchestrator-composition-snapshot"
+    "orchestrator-composition-snapshot",
+    "specialization-binding",
+    "specialization-policy",
+    "accepted-domain-descriptor",
+    "specialization-context"
   ],
   "workflow_profiles": [
     "direct-service",
@@ -42,6 +46,16 @@
   ],
   "storage_root": ".woia",
   "deterministic_tools": [
+    {
+      "id": "project.capability.update",
+      "path": "skills/project-runtime/scripts/capability-update.mjs",
+      "purpose": "Preflight exact Task pins, overlays and pending effects; advance runtime generation and invalidate current host bindings with Project byte/generation CAS."
+    },
+    {
+      "id": "orchestrator.specialization.context",
+      "path": "skills/project-runtime/scripts/specialization-context.mjs",
+      "purpose": "Resolve current scoped exact-pair snapshots and accepted domain descriptors; intersect base, organization, delta and provider policy without granting effect authority."
+    },
     {
       "id": "agent.thread.lifecycle",
       "path": "skills/project-runtime/scripts/agent-thread-lifecycle.mjs",

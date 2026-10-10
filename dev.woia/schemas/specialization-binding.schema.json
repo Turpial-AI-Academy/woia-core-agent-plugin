@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://woia.dev/schemas/core/v0.5.0/specialization-binding.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "revision", "status", "composition_id", "project_ref", "task_ref", "department", "organization_ref", "scope", "snapshot_ref", "generic_base", "delta", "active_root", "core", "provider_closure", "materialized_generation", "loaded_generation", "organization_profile_revision", "department_profile_revision", "policy_revision", "source_map_revision", "policy_refs", "descriptor_refs"],
+  "properties": {
+    "schema": {"const": "dev.woia.specialization-binding/v1"},
+    "id": {"$ref": "./common.schema.json#/$defs/id"},
+    "revision": {"type": "integer", "minimum": 1},
+    "status": {"enum": ["active", "stale", "retired"]},
+    "composition_id": {"$ref": "./common.schema.json#/$defs/id"},
+    "project_ref": {"$ref": "./common.schema.json#/$defs/id"},
+    "task_ref": {"$ref": "./common.schema.json#/$defs/ref"},
+    "department": {"$ref": "./common.schema.json#/$defs/id"},
+    "organization_ref": {"type": "string", "minLength": 1},
+    "scope": {"$ref": "#/$defs/scope"},
+    "snapshot_ref": {"$ref": "./common.schema.json#/$defs/ref"},
+    "generic_base": {"$ref": "#/$defs/pin"},
+    "delta": {"$ref": "#/$defs/pin"},
+    "active_root": {"$ref": "#/$defs/pin"},
+    "core": {"$ref": "#/$defs/pin"},
+    "provider_closure": {"type": "array", "items": {"$ref": "#/$defs/pin"}},
+    "materialized_generation": {"type": "integer", "minimum": 0},
+    "loaded_generation": {"type": ["integer", "null"], "minimum": 0},
+    "organization_profile_revision": {"type": ["integer", "null"], "minimum": 1},
+    "department_profile_revision": {"type": ["integer", "null"], "minimum": 1},
+    "policy_revision": {"type": "integer", "minimum": 1},
+    "source_map_revision": {"type": "integer", "minimum": 1},
+    "policy_refs": {
+      "type": "object", "additionalProperties": false, "required": ["base", "organization", "delta", "provider"],
+      "properties": {
+        "base": {"$ref": "./common.schema.json#/$defs/ref"},
+        "organization": {"$ref": "./common.schema.json#/$defs/ref"},
+        "delta": {"$ref": "./common.schema.json#/$defs/ref"},
+        "provider": {"$ref": "./common.schema.json#/$defs/ref"}
+      }
+    },
+    "descriptor_refs": {"type": "array", "items": {"$ref": "./accepted-domain-descriptor.schema.json#/$defs/descriptorRef"}}
+  },
+  "$defs": {
+    "scope": {"anyOf": [{"type": "string", "minLength": 1}, {"type": "object", "minProperties": 1}]},
+    "pin": {
+      "type": "object", "additionalProperties": false, "required": ["plugin", "version", "selector"],
+      "properties": {
+        "plugin": {"$ref": "./common.schema.json#/$defs/id"},
+        "version": {"$ref": "./common.schema.json#/$defs/semver"},
+        "selector": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

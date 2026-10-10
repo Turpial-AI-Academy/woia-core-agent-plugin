@@ -76,6 +76,12 @@ async function locked(root, operation, { allowRecovery = false } = {}) {
   } finally { await rm(lock, { recursive: true }); }
 }
 
+// Capability transitions and thread reservations share the same local fence.
+// The callback must not dispatch native host or provider effects while locked.
+export async function withRuntimeLifecycleLock(root, operation) {
+  return locked(root, operation);
+}
+
 function assertDeadOwner(owner) {
   assert(owner && owner.hostname === hostname() && Number.isSafeInteger(owner.pid) && owner.pid > 0 && typeof owner.token === "string", "Cannot verify the abandoned lock owner on this host");
   try { process.kill(owner.pid, 0); } catch (error) {

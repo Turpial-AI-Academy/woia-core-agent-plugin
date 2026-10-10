@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://woia.dev/schemas/core/v0.5.0/specialization-policy.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema", "id", "revision", "role", "status", "organization_ref", "scope", "permitted_actions", "permitted_outcomes"],
+  "properties": {
+    "schema": {"const": "dev.woia.specialization-policy/v1"},
+    "id": {"$ref": "./common.schema.json#/$defs/id"},
+    "revision": {"type": "integer", "minimum": 1},
+    "role": {"enum": ["base", "organization", "delta", "provider"]},
+    "status": {"enum": ["accepted", "stale", "rejected"]},
+    "organization_ref": {"type": "string", "minLength": 1},
+    "scope": {"$ref": "./specialization-binding.schema.json#/$defs/scope"},
+    "permitted_actions": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "permitted_outcomes": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "denials": {"type": "array", "items": {"type": "string", "minLength": 1}}
+  }
+}

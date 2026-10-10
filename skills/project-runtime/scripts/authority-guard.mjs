@@ -92,8 +92,9 @@ async function safePath(root, relative) {
   return current;
 }
 
-async function record(root, directory, schema, ref) {
-  if (!ref || typeof ref.id !== "string" || !ref.id || !Number.isInteger(ref.revision) || ref.revision < 1) denied("missing durable reference revision");
+async function record(root, directory, schema, ref, currentIdentity = false) {
+  if (!ref || typeof ref.id !== "string" || !ref.id ||
+      (!(currentIdentity && ref.revision === undefined) && (!Number.isInteger(ref.revision) || ref.revision < 1))) denied("missing durable reference revision");
   const folder = await safePath(root, ".woia/" + directory);
   const matches = [];
   for (const name of await readdir(folder)) {
@@ -102,7 +103,8 @@ async function record(root, directory, schema, ref) {
     const value = JSON.parse(await readFile(file, "utf8"));
     if (value.schema === schema && value.id === ref.id) matches.push(value);
   }
-  if (matches.length !== 1 || matches[0].revision !== ref.revision) denied("durable identity/revision mismatch: " + ref.id);
+  if (matches.length !== 1 || !Number.isInteger(matches[0].revision) || matches[0].revision < 1 ||
+      (ref.revision !== undefined && matches[0].revision !== ref.revision)) denied("durable identity/revision mismatch: " + ref.id);
   return matches[0];
 }
 
@@ -114,6 +116,9 @@ export async function requireLocalWrite(projectRoot, request) {
   if (project.schema !== "dev.woia.core-project-state/v1" ||
       project.project?.id !== assertString(request.projectId, "projectId") ||
       project.project?.department !== request.department) denied("Project identity/department mismatch");
+  const generation = project.custom_agents?.materialized_generation;
+  if (!Number.isSafeInteger(generation) || generation < 0 || project.custom_agents.loaded_generation !== generation
+      || project.orchestration?.runtime_restart_required !== false) denied("current runtime generation is not loaded");
   if (request.taskRef?.kind !== "Task") denied("Task reference required");
   const task = await record(root, "tasks", "dev.woia.task/v1", request.taskRef);
   if (task.department !== request.department || task.state !== "active" ||
@@ -121,6 +126,15 @@ export async function requireLocalWrite(projectRoot, request) {
   const agent = await record(root, "agents", "dev.woia.agent-instance/v1", request.agentRef);
   if (request.agentRef?.kind !== "AgentInstance" || agent.id !== request.principalId ||
       agent.lifecycle !== "active" || !sameRef(agent.task_ref, request.taskRef)) denied("AgentInstance/Task mismatch");
+  const bindingRef = agent.active_binding_ref;
+  if (bindingRef?.kind !== "HarnessRuntimeBinding") denied("AgentInstance has no current harness binding");
+  const binding = await record(root, "bindings", "dev.woia.runtime-binding/v1", bindingRef, true);
+  if (binding.state !== "active" || binding.materialized_generation !== generation || binding.loaded_generation !== generation
+      || !sameRef(binding.task_ref, {kind: "Task", id: request.taskRef.id})
+      || !sameRef(binding.agent_instance_ref, {kind: "AgentInstance", id: request.agentRef.id})) denied("runtime binding is stale or outside current scope");
+  const session = JSON.parse(await readFile(await safePath(root, ".woia/runtime/current-session.json"), "utf8"));
+  if (!binding.root_session_id || session.id !== binding.root_session_id || session.state !== "active"
+      || session.loaded_generation !== generation) denied("runtime binding has no matching current root-session observation");
   const authorityRef = agent.authority_context_ref;
   if (authorityRef?.kind !== "AuthorityContext") denied("AgentInstance has no authority context");
   const authority = await record(root, "authority-contexts", "dev.woia.authority-context/v1", authorityRef);

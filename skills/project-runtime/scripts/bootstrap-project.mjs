@@ -1,6 +1,9 @@
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { applyInstallationBindingUpdate } from "./capability-update.mjs";
+import { withRuntimeLifecycleLock } from "./agent-thread-lifecycle.mjs";
 const THIS=fileURLToPath(import.meta.url);
 const TEMPLATE=path.resolve(path.dirname(THIS),"../../../assets/templates/AGENTS.woia-block.md.template");
 const CORE_VERSION=JSON.parse(await readFile(path.resolve(path.dirname(THIS),"../../../plugin.json"),"utf8")).version;
@@ -16,11 +19,12 @@ async function atomicWrite(file,content){await mkdir(path.dirname(file),{recursi
 function mergeManagedBlock(existing,block){const beginCount=existing.split(BEGIN).length-1,endCount=existing.split(END).length-1;if(beginCount>1||endCount>1)fail("AGENTS.md has duplicate WOIA managed blocks; preserve content and reconcile explicitly");const hasBegin=beginCount===1,hasEnd=endCount===1;if(hasBegin!==hasEnd)fail("AGENTS.md has an incomplete WOIA managed block");if(hasBegin){const start=existing.indexOf(BEGIN),end=existing.indexOf(END,start);if(end<start)fail("AGENTS.md WOIA managed block markers are out of order");return existing.slice(0,start)+block.trimEnd()+existing.slice(end+END.length)}if(!existing.trim())return block;return existing.replace(/\s*$/u,"")+"\n\n"+block}
 function initialState({projectId,department,orchestrator,organizationRef,now}){return{schema:"dev.woia.core-project-state/v1",core_version:CORE_VERSION,project:{id:projectId,department,orchestrator,organization_ref:organizationRef},root_agent_binding:{status:"bound",instructions_file:"AGENTS.md",managed_block_id:"WOIA_PROJECT_OPERATING_CONTRACT",last_reconciled_at:now},provider_resolution:{installation_policy:"ask_once",installation_authorization:"pending",status:"pending",providers:[],install_plan:[],install_plan_id:null,authorized_plan_id:null},custom_agents:{status:"not_materialized",materialized_generation:0,loaded_generation:null,roles:[]},orchestration:{status:"initializing",runtime_restart_required:false,current_task_id:null,current_run_id:null},storage:{tasks:".woia/tasks",receipts:".woia/receipts",overlays:".woia/overlays",snapshots:".woia/snapshots",effects:".woia/effects",checkpoints:".woia/checkpoints"},updated_at:now}}
 export async function bootstrapProject(args){
+  args={...args,organizationRef:args.organizationRef??null};
   assertId(args.projectId,"project id");assertId(args.department,"department");assertId(args.orchestrator,"orchestrator");
   const root=path.resolve(args.root),woia=path.join(root,".woia");
   const block=await readFile(TEMPLATE,"utf8"),agentsPath=path.join(root,"AGENTS.md"),currentAgents=await readMaybe(agentsPath)??"",merged=mergeManagedBlock(currentAgents,block);
   const projectPath=path.join(woia,"project.json"),now=new Date().toISOString(),existingRaw=await readMaybe(projectPath);
-  let state,result;
+  let state,result,projectPersisted=false;
   if(existingRaw===null){state=initialState({...args,now});result="CREATED"}
   else{
     state=JSON.parse(existingRaw);
@@ -29,18 +33,26 @@ export async function bootstrapProject(args){
     if(args.organizationRef!==null&&state.project.organization_ref!==null&&state.project.organization_ref!==args.organizationRef)fail("existing organization_ref conflicts with requested organization_ref");
     if(state.project.organization_ref===null&&args.organizationRef!==null)state.project.organization_ref=args.organizationRef;
     if(state.core_version!==CORE_VERSION){
-      state.custom_agents.materialized_generation++;
-      state.custom_agents.status="materialized_pending_reload";
-      state.orchestration.runtime_restart_required=true;
-      state.orchestration.status="runtime_restart_required";
+      const update=await applyInstallationBindingUpdate({root,expectedGeneration:state.custom_agents.materialized_generation,
+        expectedProjectSha256:createHash("sha256").update(existingRaw).digest("hex"),nextCoreVersion:CORE_VERSION,
+        bootstrapReconciliation:{organizationRef:args.organizationRef}});
+      state=update.state;projectPersisted=true;
     }
-    state.core_version=CORE_VERSION;
-    state.root_agent_binding={status:"bound",instructions_file:"AGENTS.md",managed_block_id:"WOIA_PROJECT_OPERATING_CONTRACT",last_reconciled_at:now};
-    state.updated_at=now;result="RECONCILED";
+    if(!projectPersisted){
+      state.core_version=CORE_VERSION;
+      state.root_agent_binding={status:"bound",instructions_file:"AGENTS.md",managed_block_id:"WOIA_PROJECT_OPERATING_CONTRACT",last_reconciled_at:now};
+      state.updated_at=now;
+    }
+    result="RECONCILED";
   }
   for(const dir of ["tasks","task-cells","agents","bindings","receipts","effects","checkpoints","improvements","overlays","snapshots"])await mkdir(path.join(woia,dir),{recursive:true});
-  if(merged!==currentAgents)await atomicWrite(agentsPath,merged.endsWith("\n")?merged:merged+"\n");
-  await atomicWrite(projectPath,JSON.stringify(state,null,2)+"\n");
+  await withRuntimeLifecycleLock(root,async()=>{
+    const observedProject=await readMaybe(projectPath),expectedProject=projectPersisted?JSON.stringify(state,null,2)+"\n":existingRaw;
+    if(observedProject!==expectedProject)fail("Project bootstrap CAS conflict; preserve the current runtime state and reconcile again");
+    if((await readMaybe(agentsPath)??"")!==currentAgents)fail("AGENTS.md bootstrap CAS conflict; preserve the current instructions and reconcile again");
+    if(merged!==currentAgents)await atomicWrite(agentsPath,merged.endsWith("\n")?merged:merged+"\n");
+    if(!projectPersisted)await atomicWrite(projectPath,JSON.stringify(state,null,2)+"\n");
+  });
   return{result,root,project_file:projectPath,agents_file:agentsPath,state};
 }
 const isMain=process.argv[1]&&path.resolve(process.argv[1])===path.resolve(THIS);if(isMain){try{console.log(JSON.stringify(await bootstrapProject(parse(process.argv.slice(2))),null,2))}catch(e){console.error("woia:bootstrap-project: FAIL: "+e.message);process.exitCode=1}}

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://woia.dev/schemas/core/v0.5.0/accepted-domain-descriptor.schema.json",
+  "description": "A trusted host acceptance envelope; its source provider owns descriptor semantics and source revision representation.",
+  "type": "object", "additionalProperties": false,
+  "required": ["schema", "id", "status", "source_ref", "revision", "digest_sha256", "descriptor"],
+  "properties": {
+    "schema": {"const": "dev.woia.accepted-domain-descriptor/v1"},
+    "id": {"$ref": "./common.schema.json#/$defs/id"},
+    "status": {"enum": ["ACCEPTED_CURRENT", "STALE", "REJECTED"]},
+    "source_ref": {"anyOf": [{"type": "string", "minLength": 1}, {"type": "object", "minProperties": 1}]},
+    "revision": {"$ref": "#/$defs/sourceRevision"},
+    "digest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "descriptor": {"type": "object", "required": ["schema"], "properties": {"schema": {"type": "string", "minLength": 1}}},
+    "org_id": {"type": "string", "minLength": 1},
+    "scope": {"$ref": "./specialization-binding.schema.json#/$defs/scope"},
+    "domain_source_ref": {
+      "type": "object", "additionalProperties": false, "required": ["id"],
+      "properties": {"id": {"$ref": "./common.schema.json#/$defs/id"}, "revision": {"$ref": "#/$defs/sourceRevision"}}
+    }
+  },
+  "$defs": {
+    "sourceRevision": {"anyOf": [{"type": "integer", "minimum": 1}, {"type": "string", "minLength": 1}]},
+    "descriptorRef": {
+      "type": "object", "additionalProperties": false, "required": ["kind", "id", "source_ref", "revision", "digest_sha256"],
+      "properties": {
+        "kind": {"const": "DomainDescriptor"}, "id": {"$ref": "./common.schema.json#/$defs/id"},
+        "source_ref": {"anyOf": [{"type": "string", "minLength": 1}, {"type": "object", "minProperties": 1}]},
+        "revision": {"$ref": "#/$defs/sourceRevision"}, "digest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    }
+  }
+}

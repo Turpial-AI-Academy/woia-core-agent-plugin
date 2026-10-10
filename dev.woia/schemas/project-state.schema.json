@@ -15,6 +15,18 @@
     "updated_at"
   ],
   "properties": {
+    "installation_binding_ref": {
+      "type": "object", "additionalProperties": false,
+      "required": ["installation_id", "revision", "digest", "lock_sha256", "index_sha256"],
+      "properties": {
+        "installation_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+        "revision": {"type": "integer", "minimum": 1},
+        "digest": {"$ref": "./common.schema.json#/$defs/sha256"},
+        "lock_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "index_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "roles": {"type": "array", "uniqueItems": true, "items": {"$ref": "./common.schema.json#/$defs/id"}}
+      }
+    },
     "schema": {
       "const": "dev.woia.core-project-state/v1"
     },

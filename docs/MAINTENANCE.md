@@ -24,6 +24,8 @@ mise run doctor
 mise run ci:fast
 ~~~
 
+The fast gate includes `scripts/tests/runtime-lifecycle.test.mjs`: exact specialization pins, scoped descriptor and policy resolution, generation invalidation, update CAS, concurrent bootstrap/update, overlay preservation, pending effects and current-session local-write checks. Focused execution uses `mise exec -- node --test scripts/tests/runtime-lifecycle.test.mjs`. Set `WOIA_TEST_TMP` to the authorized temporary workspace when the host requires one; fixtures are synthetic and never qualify a provider or actual host session.
+
 ## Portability validation
 
 ~~~text

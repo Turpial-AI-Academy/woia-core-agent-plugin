@@ -10,7 +10,7 @@ function cmp(a,b){const x=parse(a),y=parse(b);for(let i=0;i<3;i++){if(x[i]<y[i])
 function inRange(v,r){return cmp(v,r.min_inclusive)>=0&&cmp(v,r.max_exclusive)<0;}
 function canonical(value){if(Array.isArray(value))return "["+value.map(canonical).join(",")+"]";if(value&&typeof value==="object")return "{"+Object.keys(value).sort().map(k=>JSON.stringify(k)+":"+canonical(value[k])).join(",")+"}";return JSON.stringify(value);}
 function normalizeProviders(items){if(!Array.isArray(items))fail("provider closure must be an array");const out=items.map(x=>({plugin:x?.plugin,version:x?.version,selector:x?.selector}));const seen=new Set();for(const p of out){if(!p.plugin)fail("provider plugin is required");parse(p.version);if(p.selector!==undefined)requireSelector(p.selector,p.version);const k=p.plugin+"@"+p.version;if(seen.has(k))fail("duplicate provider closure entry: "+k);seen.add(k);}return out.sort((a,b)=>a.plugin.localeCompare(b.plugin)||a.version.localeCompare(b.version));}
-export function createOrchestratorCompositionSnapshot({declaration,taskRef,projectRef,department,baseVersion,baseSelector,deltaVersion,deltaSelector,providers=[],organizationRevision=null,departmentRevision=null,createdAt}){
+export function createOrchestratorCompositionSnapshot({declaration,taskRef,projectRef,department,baseVersion,baseSelector,deltaVersion,deltaSelector,coreVersion=null,coreSelector=null,providers=[],organizationRevision=null,departmentRevision=null,createdAt}){
   if(declaration?.schema!=="dev.woia.orchestrator-specialization/v1")fail("unsupported specialization declaration");
   if(declaration.status!=="qualified")fail("composition declaration is not qualified");
   if(!declaration.generic_base?.plugin||!declaration.delta?.plugin||declaration.generic_base.plugin===declaration.delta.plugin)fail("composition base/delta identity is invalid");
@@ -27,6 +27,8 @@ export function createOrchestratorCompositionSnapshot({declaration,taskRef,proje
   const normalized=normalizeProviders(providers);
   const pair=(declaration.evaluated_pairs??[]).find(p=>p.base_version===baseVersion&&p.delta_version===deltaVersion&&p.status==="passed");
   if(!pair)fail("exact base/delta pair has no passed evaluation");
+  if(coreVersion!==null||coreSelector!==null){parse(coreVersion);requireSelector(coreSelector,coreVersion);if(pair.core_version!==coreVersion)fail("exact Core version has no matching passed composition evaluation");if(pair.core_selector!==undefined&&pair.core_selector!==coreSelector)fail("exact Core selector does not match composition evaluation");}
+  else if(pair.core_version!==undefined)fail("evaluated composition requires an exact Core pin");
   if(!Array.isArray(pair.evidence)||!pair.evidence.length)fail("passed exact pair requires evaluation evidence");
   requireStrings(pair.evidence,"evaluation evidence",{nonEmpty:true});
   const expected=normalizeProviders(pair.provider_closure??[]).map(x=>x.plugin+"@"+x.version).sort();
@@ -45,6 +47,7 @@ export function createOrchestratorCompositionSnapshot({declaration,taskRef,proje
     provider_closure:normalized,evaluation_evidence:[...pair.evidence].sort(),
     organization_profile_revision:organizationRevision??null,department_profile_revision:departmentRevision??null
   };
+  if(coreVersion!==null)identity.core={plugin:"woia-core",version:coreVersion,selector:coreSelector};
   const digest="sha256:"+createHash("sha256").update(canonical(identity)).digest("hex");
   return {schema:"dev.woia.orchestrator-composition-snapshot/v1",id:"orchestrator-snapshot:"+taskRef.id+":"+digest.slice(7,19),...identity,composed_digest:digest,created_at:createdAt};
 }

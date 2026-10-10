@@ -43,7 +43,7 @@ When command execution is available, prefer the bundled deterministic filesystem
 
 It creates only WOIA-owned state directories, preserves unrelated root `AGENTS.md` instructions, reconciles only the managed WOIA block/state, and fails closed on Project identity conflicts.
 
-Compatible Core patch updates preserve existing v1 Project state. When bootstrap observes a different installed Core patch, it updates `core_version`, advances materialization and requires a fresh loaded runtime; it does not reset Task/overlay state or treat old readiness as current.
+Compatible Core patch updates preserve existing v1 Project state. When bootstrap observes a different installed Core patch, it uses the shared capability transition: check exact Task pins, overlays, native runs and pending effects; update `core_version`; advance materialization; clear `loaded_generation`; retire current runtime bindings and require a fresh loaded runtime. A changed in-flight pin or unresolved effect blocks the update before state changes. Bootstrap also uses the shared lifecycle fence and byte comparison when reconciling the same version.
 
 WOIA manages exactly one `WOIA_PROJECT_OPERATING_CONTRACT` block in `<Project Root>/AGENTS.md`. Account/global instructions are loaded and owned by the host; do not locate or modify them. Preserve existing nested instruction files untouched; they are not WOIA state.
 
@@ -73,7 +73,7 @@ The target must be listed exactly in the Task's `expected_outputs` and in the Ag
 
 ## Runtime generations
 
-Plugin enablement or custom-role materialization increments the materialized generation. Provider-owned work is executable only when loaded_generation equals materialized_generation and required provider skills/roles resolve.
+Plugin enablement or custom-role materialization increments the materialized generation. Provider-owned work is executable only when loaded_generation equals materialized_generation and required provider skills/roles resolve. The local-write guard reads the current active harness binding and root-session observation as well as the authority grant; a historical binding cannot authorize a write after an update.
 
 Reuse this verification during the same loaded generation. Do not re-audit PluginStore/config/role files on every delegated turn.
 
@@ -163,6 +163,30 @@ Both resolver entrypoints require the authenticated expected `organizationRef`; 
 ### Independent base + delta composition
 
 A vertical specialization is activated only from a qualified Ecosystem `dev.woia.orchestrator-specialization/v1` declaration. Core creates `dev.woia.orchestrator-composition-snapshot/v1` only when the exact base version is inside the declared range, the exact base/delta pair has passed evaluation, and the actual provider closure matches that evaluated pair. The delta is the one active root; the generic base is a dependency, not a competing root. In-flight Tasks keep the exact snapshot. Unsupported upgrades block instead of silently rebinding.
+
+New evaluated tuples also pin Core through `core_version` in the admitted declaration and `coreVersion`/`coreSelector` in the snapshot constructor. Historical snapshots remain immutable; they cannot supply a new specialization context without that evaluated Core pin.
+
+### Trusted specialization context
+
+Use [specialization-context.mjs](scripts/specialization-context.mjs) to resolve `dev.woia.specialization-context/v1`. `loadSpecializationContext({root, taskRef, bindingRef, requiredSlots, requiredDescriptorIds})` reads the fixed Project-owned Tasks, snapshots, specialization bindings, accepted domain descriptors, current domain sources and specialization policies. `createSpecializationContext` is the pure equivalent for a host that has independently resolved those records. Request payloads cannot provide module paths, accepted bindings or policies.
+
+The resolver verifies the active root, exact base/delta/Core/provider pins, current Task and Project scope, loaded generation, exported slots, policy revisions and descriptor content hashes. The base, delta and provider closure must be installed, enabled and loaded in the current Project inventory. Missing or stale specialization blocks; it never changes the requested work into a generic fallback.
+
+Domain providers own the descriptor schemas and their semantics. Core accepts a generic envelope with `status: ACCEPTED_CURRENT`, `source_ref`, an exact opaque source `revision`, a raw 64-character `digest_sha256` and `descriptor`. The digest is SHA-256 over canonical JSON with sorted object keys and preserved array order. A separately resolved current domain source must match that source, revision and digest. Core does not mark a source accepted or current from conversational claims.
+
+`permitted_actions` and `permitted_outcomes` are the intersection of the admitted base, organization, delta and provider policies. This context narrows available business actions; the provider still checks its exact authority, approval, persistence and effect controls before dispatch. Department methodology and domain fact acceptance stay in their owning plugins.
+
+### Installation transitions
+
+Global owns distribution selection, installation locks, host projections and migration proof. Core owns Project lifecycle through [capability-update.mjs](scripts/capability-update.mjs):
+
+```text
+node <installed-core-root>/skills/project-runtime/scripts/capability-update.mjs --root <Project-root> --expected-generation <current-generation> --expected-project-sha256 <exact-project-file-hash> --binding <staged-installation-binding.json> --core-version <installed-Core-version>
+```
+
+`previewCapabilityUpdate` performs the same preflight without writing. `applyInstallationBindingUpdate` shares the native-thread lifecycle lock, compares the current Project bytes and generation, and rejects unresolved effects, running native runs, unavailable in-flight pins or incompatible overlays. It preserves Task, snapshot and overlay bytes. On success it clears all load observations, retires current bindings, refreshes the selected provider inventory and requires a new root session. Global publishes its installation binding within its own guarded activation transaction.
+
+Existing external roles remain present or cause a reconciliation conflict. Removing historical managed roles requires an immutable verified Global migration receipt whose byte hash is pinned by the staged binding. Pass that receipt using `--migration-receipt`; its Project byte hash, lock hash and ownership records must match the transition. Installation and load remain separate states. A prepared projection is not a live host observation.
 
 Selectors must be the exact `v<version>` tag or an immutable commit SHA already qualified through Ecosystem; Core does not re-run release admission. Declaration semantics and evaluation evidence must be non-empty correctly typed arrays. The file writer atomically creates the snapshot without replacement: competing writers with different semantics cannot overwrite an in-flight Task's winner.
 

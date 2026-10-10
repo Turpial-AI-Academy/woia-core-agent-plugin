@@ -23,6 +23,7 @@
     "created_at"
   ],
   "properties": {
+    "core": {"$ref": "./specialization-binding.schema.json#/$defs/pin"},
     "schema": {
       "const": "dev.woia.orchestrator-composition-snapshot/v1"
     },

@@ -1,7 +1,9 @@
 import { createHash } from "node:crypto";
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { persistImmutableSnapshot } from "../../project-runtime/scripts/immutable-snapshot.mjs";
+import { requireSelector, requireTaskRef } from "../../project-runtime/scripts/b4-contract.mjs";
 
 const THIS = fileURLToPath(import.meta.url);
 const SEMVER = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
@@ -51,49 +53,15 @@ function parse(argv) {
   return { taskId, capability, plugin, version, selector, output, overlays, organizationRevision, departmentRevision };
 }
 
-async function readMaybe(file) {
-  try {
-    return await readFile(file, "utf8");
-  } catch (error) {
-    if (error.code === "ENOENT") return null;
-    throw error;
-  }
-}
-
-async function atomicWrite(file, content) {
-  await mkdir(path.dirname(file), { recursive: true });
-  const temp = `${file}.tmp-${process.pid}-${Date.now()}`;
-  await writeFile(temp, content, "utf8");
-  await rename(temp, file);
-}
-
-function stableSnapshot(snapshot) {
-  const { created_at: _createdAt, ...stable } = snapshot;
-  return stable;
-}
-
 async function writeImmutableSnapshot(file, snapshot) {
-  const existingRaw = await readMaybe(file);
-  if (existingRaw !== null) {
-    let existing;
-    try {
-      existing = JSON.parse(existingRaw);
-    } catch {
-      fail(`${file}: existing capability snapshot is not valid JSON`);
-    }
-    if (typeof existing.created_at !== "string") fail(`${file}: existing capability snapshot has no created_at`);
-    if (canonical(stableSnapshot(existing)) !== canonical(stableSnapshot(snapshot))) {
-      fail(`${file}: capability snapshots are immutable; output already contains a different snapshot`);
-    }
-    return { result: "UNCHANGED", snapshot: existing };
-  }
-
-  await atomicWrite(file, `${JSON.stringify(snapshot, null, 2)}\n`);
-  return { result: "CREATED", snapshot };
+  const persisted = await persistImmutableSnapshot(file, snapshot, "created_at");
+  return {result: persisted.created ? "CREATED" : "UNCHANGED", snapshot: persisted.snapshot};
 }
 
 export async function createCapabilitySnapshot(args) {
   if (!SEMVER.test(args.version)) fail("base version must be stable SemVer");
+  requireSelector(args.selector, args.version);
+  requireTaskRef({kind: "Task", id: args.taskId}, "Task pin");
   for (const [label, value] of [
     ["organization revision", args.organizationRevision],
     ["department revision", args.departmentRevision],
@@ -111,6 +79,7 @@ export async function createCapabilitySnapshot(args) {
     if (!(doc.scope in order)) fail(`${file}: invalid overlay scope`);
     if (doc.plugin !== args.plugin) fail(`${file}: overlay plugin does not match ${args.plugin}`);
     if (doc.compatibility?.status !== "compatible") fail(`${file}: overlay is not compatible with base ${args.version}`);
+    if (!Array.isArray(doc.compatibility.conflicts) || doc.compatibility.conflicts.length) fail(`${file}: overlay compatibility conflicts must be reconciled`);
     if (doc.compatibility.last_validated_base !== args.version) fail(`${file}: overlay compatibility was validated for another base version`);
     loaded.push({ file, doc });
   }

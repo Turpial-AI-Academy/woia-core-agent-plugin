@@ -69,3 +69,5 @@ No custom agent may commit to upstream WOIA repositories, tag/publish a plugin r
 ## Independent orchestrator composition snapshots
 
 For a department with an independently released vertical delta, use `create-orchestrator-composition-snapshot.mjs` in addition to ordinary capability snapshots. The input declaration must come from an admitted/validated Ecosystem specialization contract, have status `qualified`, and contain a passed exact-pair evaluation. The helper fails closed on an out-of-range base, unevaluated pair or mismatched provider closure. Preserve prior Task snapshots; never rewrite a snapshot to adopt a newer base/delta pair.
+
+For new qualification tuples, supply the exact evaluated `coreVersion` and `coreSelector`. Core stores that pin in the immutable snapshot and requires it when deriving a current specialization context. Host-owned accepted domain descriptors and policies are resolved separately by the Project runtime; adding a descriptor to a prompt does not bind or accept it.
