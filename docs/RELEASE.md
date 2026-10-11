@@ -1,6 +1,6 @@
 # Release
 
-Core's current distribution version is `0.5.7`. Public plugin identity is `woia-core`.
+Core's current distribution version is `0.5.8`. Public plugin identity is `woia-core`.
 
 Authorized maintainers prepare a release from an exact clean commit using Node 24.21.0 and pnpm 11.19.0:
 
